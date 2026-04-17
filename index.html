@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Prince Enterprise – Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--p:#2874f0;--pd:#1565c0;--pl:#e8f0fd;--s:#fb641b;--g:#26a541;--r:#ff4141;--w:#f9a825;--pu:#7b1fa2;--bg:#f0f2f5;--c:#fff;--c2:#f8f9fa;--t:#212121;--t2:#535766;--m:#878787;--b:#e0e0e0;--d:#f0f0f0;--sb:235px;--sh:0 1px 4px rgba(0,0,0,.08);--sh2:0 2px 12px rgba(0,0,0,.13);--sh3:0 8px 32px rgba(0,0,0,.15);--rd:10px;--tr:all .25s ease}
+[data-theme=dark]{--bg:#0e0e1a;--c:#17172b;--c2:#1e1e32;--t:#e8eaf6;--t2:#b0bec5;--m:#78909c;--b:#2a2a44;--d:#1e1e36}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);transition:background .3s,color .3s;overflow-x:hidden;min-height:100vh}
+a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cursor:pointer;border:none;background:none;font-family:inherit}input,select,textarea{font-family:inherit;outline:none}ul{list-style:none}.hidden{display:none!important}
+
+/* AUTH */
+#adminAuth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#060d2e,#0d1b5e,#1565c0,#2874f0);padding:20px;position:relative}
+#adminAuth::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:30px 30px}
+.auth-card{background:var(--c);border-radius:18px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 24px 80px rgba(0,0,0,.5);animation:aIn .5s cubic-bezier(.34,1.1,.64,1);position:relative;z-index:1}
+@keyframes aIn{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:none}}
+.auth-logo{text-align:center;margin-bottom:24px}
+.auth-ico{width:58px;height:58px;background:linear-gradient(135deg,#1565c0,#e53935);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 6px 20px rgba(40,116,240,.4)}
+.auth-ico i{color:#fff;font-size:24px}
+.auth-logo h2{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:800}
+.auth-logo p{color:var(--m);font-size:12px}
+.fg{margin-bottom:13px;position:relative}
+.fg label{display:block;font-size:10.5px;font-weight:700;color:var(--t2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fc{width:100%;padding:10px 13px;border:1.5px solid var(--b);border-radius:var(--rd);font-size:13px;background:var(--c);color:var(--t);transition:var(--tr)}
+.fc:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(40,116,240,.1)}
+.fci{padding-left:40px}.fi{position:absolute;left:13px;bottom:11px;color:var(--m);font-size:14px;pointer-events:none}
+.pt{position:absolute;right:12px;bottom:11px;color:var(--m);cursor:pointer;font-size:14px}
+.btn{padding:11px 18px;border-radius:var(--rd);font-size:13px;font-weight:700;transition:var(--tr);display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+.btn-p{background:linear-gradient(135deg,#2874f0,#1565c0);color:#fff;box-shadow:0 4px 14px rgba(40,116,240,.35)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(40,116,240,.4)}
+.btn-d{background:linear-gradient(135deg,#e53935,#c62828);color:#fff}
+.btn-g{background:linear-gradient(135deg,#43a047,#2e7d32);color:#fff}
+.btn-w{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff}
+.btn-o{background:linear-gradient(135deg,#fb8c00,#e65100);color:#fff}
+.btn-pu{background:linear-gradient(135deg,#8e24aa,#6a1b9a);color:#fff}
+.btn-f{width:100%}.btn-sm{padding:7px 13px;font-size:12px}
+.errm{color:var(--r);font-size:11.5px;margin-top:6px;display:flex;align-items:center;gap:5px}
+.okm{color:var(--g);font-size:11.5px;margin-top:6px;display:flex;align-items:center;gap:5px}
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* LAYOUT */
+#adminApp{display:flex;min-height:100vh}
+#sidebar{width:var(--sb);background:linear-gradient(180deg,#060d2e 0%,#0d1b5e 40%,#1565c0 80%,#1e88e5 100%);position:fixed;top:0;left:0;bottom:0;z-index:500;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;transition:transform .3s ease}
+#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
+.sb-top{padding:18px 14px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-ico{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.sb-ico i{color:var(--p);font-size:19px}
+.sb-top h2{font-family:'Exo 2',sans-serif;font-size:14px;font-weight:900;color:#fff}
+.sb-top p{font-size:10px;color:rgba(255,255,255,.55)}
+.sb-live{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);color:#fff;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin-top:5px}
+.sb-live::before{content:'';width:6px;height:6px;background:#4caf50;border-radius:50%;animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sbnav{flex:1;padding:6px 0}
+.sbsec{padding:8px 14px 2px;font-size:9px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px}
+.sbsep{height:1px;background:rgba(255,255,255,.1);margin:4px 14px}
+.smi{display:flex;align-items:center;gap:9px;padding:10px 14px;cursor:pointer;color:rgba(255,255,255,.65);font-size:12.5px;font-weight:600;transition:var(--tr);border-left:3px solid transparent;position:relative}
+.smi:hover{background:rgba(255,255,255,.1);color:#fff}
+.smi.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#ffe500}
+.smi i{width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.smi .snm{flex:1}
+.smi .snb{min-width:17px;height:17px;padding:0 4px;background:var(--s);color:#fff;border-radius:9px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.smi .snb.g{background:var(--g)}.smi .snb.pu{background:var(--pu)}
+.sb-foot{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-adm{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sb-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;font-family:'Exo 2',sans-serif}
+.sb-ai{color:#fff;flex:1;min-width:0}
+.sb-ai span{font-size:11.5px;font-weight:700;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-ai small{font-size:9.5px;opacity:.55}
+.dtrow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.dtrow span{font-size:11px;color:rgba(255,255,255,.65)}
+.tog{width:38px;height:21px;background:rgba(255,255,255,.2);border-radius:11px;cursor:pointer;position:relative;transition:var(--tr);flex-shrink:0}
+.tog::after{content:'';width:17px;height:17px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:var(--tr);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tog.on{background:var(--g)}
+.tog.on::after{transform:translateX(17px)}
+
+/* MAIN */
+#admain{margin-left:var(--sb);flex:1;min-height:100vh;display:flex;flex-direction:column}
+#adhdr{background:var(--c);padding:13px 18px;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);position:sticky;top:0;z-index:400;border-bottom:1px solid var(--b)}
+.mbtn{width:34px;height:34px;border-radius:var(--rd);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);display:none;transition:var(--tr)}
+.mbtn:hover{background:var(--pl);color:var(--p)}
+.htitle{font-family:'Exo 2',sans-serif;font-size:17px;font-weight:800}
+.hacts{display:flex;align-items:center;gap:7px;margin-left:auto}
+.hbtn{width:35px;height:35px;border-radius:var(--rd);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:var(--tr);position:relative}
+.hbtn:hover{background:var(--pl);color:var(--p)}
+.hbadge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:var(--r);color:#fff;border-radius:50%;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--c)}
+#cont{flex:1;padding:18px}
+
+/* VIEWS */
+.view{display:none}.view.show{display:block}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.scard{background:var(--c);border-radius:var(--rd);padding:15px;box-shadow:var(--sh);cursor:pointer;transition:var(--tr);position:relative;overflow:hidden}
+.scard:hover{transform:translateY(-2px);box-shadow:var(--sh3)}
+.scard::after{content:'';position:absolute;top:-16px;right:-16px;width:70px;height:70px;border-radius:50%;opacity:.1}
+.sc-b::after{background:var(--p)}.sc-g::after{background:var(--g)}.sc-o::after{background:var(--s)}.sc-pu::after{background:var(--pu)}.sc-r::after{background:var(--r)}.sc-t::after{background:#00796b}
+.sc-ico{width:38px;height:38px;border-radius:var(--rd);display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;margin-bottom:9px}
+.sc-val{font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900;line-height:1}
+.sc-lbl{font-size:11.5px;color:var(--m);margin-top:2px}
+.sc-tr{font-size:10.5px;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:2px}
+.tup{color:var(--g)}.tdn{color:var(--r)}
+
+/* SECTION */
+.sechd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sechd h2{font-family:'Exo 2',sans-serif;font-size:15.5px;font-weight:800}
+.sechd-a{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+
+/* CARD */
+.card{background:var(--c);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden}
+.cp{padding:15px}
+
+/* TABLE */
+.twrap{background:var(--c);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden}
+.tsearch{padding:11px 13px;border-bottom:1px solid var(--d);display:flex;align-items:center;gap:9px}
+.tsearch input{flex:1;padding:7px 11px;border:1.5px solid var(--b);border-radius:8px;font-size:12.5px;background:var(--bg);color:var(--t);transition:var(--tr);min-width:0}
+.tsearch input:focus{border-color:var(--p)}
+.tsearch select{padding:7px 11px;border:1.5px solid var(--b);border-radius:8px;font-size:12.5px;background:var(--bg);color:var(--t);cursor:pointer}
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead{background:var(--bg)}
+.tbl th{padding:9px 13px;text-align:left;font-size:10.5px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.tbl td{padding:10px 13px;border-bottom:1px solid var(--d);font-size:12.5px;vertical-align:middle}
+.tbl tr:hover td{background:var(--bg)}
+.tbl tr:last-child td{border-bottom:none}
+.td-img{width:38px;height:38px;border-radius:6px;object-fit:cover;background:var(--c2);flex-shrink:0}
+.tda{display:flex;gap:4px;flex-wrap:nowrap}
+.ab{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:var(--tr);flex-shrink:0}
+.ab-b{background:var(--pl);color:var(--p)}.ab-b:hover{background:var(--p);color:#fff}
+.ab-r{background:#fff0f0;color:var(--r)}.ab-r:hover{background:var(--r);color:#fff}
+.ab-g{background:#e8f5e9;color:var(--g)}.ab-g:hover{background:var(--g);color:#fff}
+.ab-wa{background:#e8f5e9;color:#25d366}.ab-wa:hover{background:#25d366;color:#fff}
+.ab-pu{background:#f3e5f5;color:var(--pu)}.ab-pu:hover{background:var(--pu);color:#fff}
+.ab-o{background:#fff8e1;color:#e65100}.ab-o:hover{background:#e65100;color:#fff}
+.pill{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block;white-space:nowrap}
+.p-g{background:#e8f5e9;color:#2e7d32}.p-b{background:#e3f2fd;color:#1565c0}.p-o{background:#fff8e1;color:#e65100}.p-r{background:#ffebee;color:#c62828}.p-gr{background:#f5f5f5;color:#616161}.p-pu{background:#f3e5f5;color:#7b1fa2}
+
+/* MODAL */
+.modal{position:fixed;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(2px)}
+.modal-box{background:var(--c);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;position:relative;z-index:1;animation:mIn .28s cubic-bezier(.34,1.1,.64,1);box-shadow:var(--sh3)}
+@keyframes mIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.mhd{padding:15px 17px;border-bottom:1px solid var(--d);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--c);z-index:5}
+.mhd h3{font-family:'Exo 2',sans-serif;font-size:15px;font-weight:800}
+.mclose{width:29px;height:29px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--m);transition:var(--tr)}
+.mclose:hover{background:var(--r);color:#fff}
+.mbody{padding:15px 17px}
+.mfoot{padding:11px 17px;border-top:1px solid var(--d);display:flex;gap:8px;justify-content:flex-end}
+
+/* SETTING */
+.sg{background:var(--c);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden;margin-bottom:13px}
+.sgtitle{padding:10px 15px;background:var(--bg);font-size:11px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--d);display:flex;align-items:center;gap:7px}
+.sr{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--d);gap:14px}
+.sr:last-child{border-bottom:none}
+.srl{flex:1}.srl-t{font-size:13px;font-weight:700;margin-bottom:2px}.srl-d{font-size:11px;color:var(--m)}
+.src{flex-shrink:0;min-width:190px}
+.src input,.src select,.src textarea{width:100%;padding:7px 10px;border:1.5px solid var(--b);border-radius:7px;font-size:12.5px;background:var(--bg);color:var(--t);transition:var(--tr)}
+.src input:focus,.src select:focus,.src textarea:focus{border-color:var(--p)}
+
+/* COUPON */
+.coup{background:linear-gradient(135deg,var(--p),var(--pd));border-radius:var(--rd);padding:13px 15px;color:#fff;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;overflow:hidden}
+.coup::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='3' cy='3' r='3' fill='white' fill-opacity='.04'/%3E%3C/svg%3E") repeat}
+.coup-code{font-family:'Exo 2',monospace;font-size:17px;font-weight:900;letter-spacing:2px}
+.coup-info{font-size:11px;opacity:.8;margin-top:2px}
+.coup-val{font-size:22px;font-weight:900;text-align:right;flex-shrink:0}
+.coup-acts{display:flex;gap:5px;margin-top:5px;justify-content:flex-end}
+
+/* MINI CHART */
+.mchart{display:flex;align-items:flex-end;gap:3px;height:64px;padding:4px 0}
+.mb{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:var(--tr);cursor:pointer}
+.mb:hover{opacity:.75}
+
+/* TOAST */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);z-index:900;background:var(--t);color:var(--c);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:var(--sh3);opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:768px){#sidebar{transform:translateX(-100%)}.sbshow{transform:translateX(0)!important}#admain{margin-left:0}.mbtn{display:flex}.g2,.g3{grid-template-columns:1fr}.sr{flex-direction:column}.src{min-width:0;width:100%}table{display:block;overflow-x:auto}}
+
+/* Admin extra */
+.badge-new{animation:badgePulse .6s ease 3}
+@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+</style>
+</head>
+<body>
+
+<!-- ADMIN AUTH -->
+<div id="adminAuth">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-ico"><i class="fas fa-shield-halved"></i></div>
+      <h2>Admin Panel</h2>
+      <p>Prince Enterprise Management System</p>
+    </div>
+    <div class="fg"><label>Admin Email</label><i class="fi fas fa-envelope"></i><input class="fc fci" type="email" id="aEmail" placeholder="admin@princeenterprise.com"></div>
+    <div class="fg"><label>Password</label><i class="fi fas fa-lock"></i><input class="fc fci" type="password" id="aPass" placeholder="Admin password"><span class="pt" onclick="togglePw()"><i class="fas fa-eye" id="pwIco"></i></span></div>
+    <button class="btn btn-p btn-f" onclick="adminLogin()" id="aBtn"><span>Login to Dashboard</span></button>
+    <p id="aErr" class="errm hidden"><i class="fas fa-circle-exclamation"></i><span></span></p>
+    <p style="font-size:11px;color:var(--m);text-align:center;margin-top:12px;line-height:1.5">🔒 Restricted access — authorized administrators only.<br>New to admin? Contact the system owner.</p>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-top">
+      <div class="sb-ico"><i class="fas fa-lightbulb"></i></div>
+      <h2>Prince Enterprise</h2>
+      <p>Admin Dashboard v2.0</p>
+      <span class="sb-live">LIVE</span>
+    </div>
+
+    <nav class="sbnav">
+      <div class="smi on" id="smi-dashboard" onclick="nav('dashboard')"><i class="fas fa-tachometer-alt"></i><span class="snm">Dashboard</span></div>
+      <div class="sbsep"></div>
+
+      <div class="sbsec">Orders</div>
+      <div class="smi" id="smi-orders" onclick="nav('orders')"><i class="fas fa-box"></i><span class="snm">All Orders</span><span class="snb" id="nbOrders">0</span></div>
+      <div class="smi" id="smi-tracking" onclick="nav('tracking')"><i class="fas fa-truck"></i><span class="snm">Track & Update</span></div>
+      <div class="sbsep"></div>
+
+      <div class="sbsec">Catalogue</div>
+      <div class="smi" id="smi-products" onclick="nav('products')"><i class="fas fa-box-open"></i><span class="snm">Products</span></div>
+      <div class="smi" id="smi-categories" onclick="nav('categories')"><i class="fas fa-th-large"></i><span class="snm">Categories</span></div>
+      <div class="smi" id="smi-inventory" onclick="nav('inventory')"><i class="fas fa-warehouse"></i><span class="snm">Inventory</span></div>
+      <div class="sbsep"></div>
+
+      <div class="sbsec">Users & Marketing</div>
+      <div class="smi" id="smi-customers" onclick="nav('customers')"><i class="fas fa-users"></i><span class="snm">Customers</span></div>
+      <div class="smi" id="smi-coupons" onclick="nav('coupons')"><i class="fas fa-tag"></i><span class="snm">Coupons</span></div>
+      <div class="smi" id="smi-notifications" onclick="nav('notifications')"><i class="fas fa-bell"></i><span class="snm">Push Notifications</span></div>
+      <div class="smi" id="smi-whatsapp" onclick="nav('whatsapp')"><i class="fab fa-whatsapp"></i><span class="snm">WhatsApp</span></div>
+      <div class="smi" id="smi-banners" onclick="nav('banners')"><i class="fas fa-images"></i><span class="snm">Banners</span></div>
+      <div class="sbsep"></div>
+
+      <div class="sbsec">Finance</div>
+      <div class="smi" id="smi-payments" onclick="nav('payments')"><i class="fas fa-rupee-sign"></i><span class="snm">Payments</span></div>
+      <div class="smi" id="smi-reports" onclick="nav('reports')"><i class="fas fa-chart-bar"></i><span class="snm">Reports</span></div>
+      <div class="sbsep"></div>
+
+      <div class="sbsec">System</div>
+      <div class="smi" id="smi-reviews" onclick="nav('reviews')"><i class="fas fa-star"></i><span class="snm">Reviews</span></div>
+      <div class="smi" id="smi-settings" onclick="nav('settings')"><i class="fas fa-cog"></i><span class="snm">App Settings</span></div>
+      <div class="sbsep"></div>
+      <div class="sbsec">Advanced</div>
+      <div class="smi" id="smi-analytics" onclick="nav('analytics')"><i class="fas fa-chart-line"></i><span class="snm">Analytics</span></div>
+      <div class="smi" id="smi-bulk" onclick="nav('bulk')"><i class="fas fa-boxes"></i><span class="snm">Bulk Orders</span></div>
+      <div class="smi" id="smi-loyalty" onclick="nav('loyalty')"><i class="fas fa-star"></i><span class="snm">Loyalty Program</span></div>
+      <div class="smi" id="smi-refunds" onclick="nav('refunds')"><i class="fas fa-undo"></i><span class="snm">Refunds</span></div>
+      <div class="smi" id="smi-pricealerts" onclick="nav('pricealerts')"><i class="fas fa-bell"></i><span class="snm">Price Alerts</span></div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-adm">
+        <div class="sb-av" id="sbAv">A</div>
+        <div class="sb-ai"><span id="sbName">Admin</span><small>Super Administrator</small></div>
+      </div>
+      <div class="dtrow">
+        <div class="tog" id="darkTog" onclick="toggleDark()"></div>
+        <span>Dark Mode</span>
+      </div>
+      <button class="btn btn-d btn-f btn-sm" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main id="admain">
+    <header id="adhdr">
+      <div class="mbtn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+      <div class="htitle" id="hdrTitle">Dashboard</div>
+      <div class="hacts">
+        <div class="hbtn" onclick="nav('orders')" title="New Orders"><i class="fas fa-bell"></i><span class="hbadge" id="hdrBadge">0</span></div>
+        <div class="hbtn" onclick="window.open('index.html','_blank')" title="View Store"><i class="fas fa-store"></i></div>
+        <div class="hbtn" onclick="toggleDark()" title="Toggle Dark"><i class="fas fa-moon" id="darkIco"></i></div>
+        <div class="hbtn" onclick="nav('settings')" title="Settings"><i class="fas fa-cog"></i></div>
+      </div>
+    </header>
+
+    <div id="cont">
+
+      <!-- DASHBOARD -->
+      <div id="vDashboard" class="view show">
+        <div class="stats" id="statGrid"></div>
+        <div class="g2" style="margin-bottom:14px">
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Revenue – Last 7 Days</h2></div>
+            <div class="mchart" id="revenueChart"></div>
+            <div style="font-size:11px;color:var(--m);margin-top:5px;text-align:center">Daily revenue trend (simulated)</div>
+          </div>
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Order Status</h2></div>
+            <div id="statusSplit"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cp" style="border-bottom:1px solid var(--d)">
+            <div class="sechd" style="margin:0"><h2>Recent Orders</h2><button class="btn btn-p btn-sm" onclick="nav('orders')">View All</button></div>
+          </div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div id="vOrders" class="view">
+        <div class="sechd"><h2>All Orders</h2><div class="sechd-a"><button class="btn btn-g btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div></div>
+        <div class="twrap">
+          <div class="tsearch">
+            <input id="ordQ" placeholder="Search order ID, email…" oninput="renderOrders()">
+            <select id="ordSt" onchange="renderOrders()">
+              <option value="">All Status</option>
+              <option>Confirmed</option><option>Processing</option><option>Shipped</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div id="vTracking" class="view">
+        <div class="sechd"><h2>Order Tracking Manager</h2></div>
+        <div class="card cp" style="margin-bottom:13px">
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
+            <input id="trackQ" class="fc" style="flex:1;min-width:200px" placeholder="Enter Order ID…" oninput="searchTrack()">
+            <button class="btn btn-p" onclick="searchTrack()"><i class="fas fa-search"></i> Find</button>
+          </div>
+        </div>
+        <div id="trackRes"></div>
+        <div class="card">
+          <div class="cp" style="border-bottom:1px solid var(--d)"><div class="sechd" style="margin:0"><h2>All Orders — Quick Status</h2></div></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#Order</th><th>Customer</th><th>Current Status</th><th>Update Status</th><th>WA</th></tr></thead><tbody id="trackBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div id="vProducts" class="view">
+        <div class="sechd"><h2>Products</h2><button class="btn btn-g btn-sm" onclick="openAddProduct()"><i class="fas fa-plus"></i> Add Product</button></div>
+        <div class="twrap">
+          <div class="tsearch"><input id="prodQ" placeholder="Search products…" oninput="renderProducts()"></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Flags</th><th>Actions</th></tr></thead><tbody id="prodsBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div id="vCategories" class="view">
+        <div class="sechd"><h2>Categories</h2><button class="btn btn-g btn-sm" onclick="openAddCat()"><i class="fas fa-plus"></i> Add</button></div>
+        <div class="g4" id="catsGrid"></div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div id="vInventory" class="view">
+        <div class="sechd"><h2>Inventory Management</h2><button class="btn btn-o btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div>
+        <div class="twrap">
+          <div class="tsearch"><input id="invQ" placeholder="Search products…" oninput="renderInventory()"></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Alert At</th><th>Status</th><th>Action</th></tr></thead><tbody id="invBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div id="vCustomers" class="view">
+        <div class="sechd"><h2>Customers</h2><div class="sechd-a">
+          <button class="btn btn-w btn-sm" onclick="nav('whatsapp')"><i class="fab fa-whatsapp"></i> Broadcast</button>
+          <button class="btn btn-g btn-sm" onclick="openAddCust()"><i class="fas fa-user-plus"></i> Add</button>
+        </div></div>
+        <div class="twrap">
+          <div class="tsearch"><input id="custQ" placeholder="Search customers…" oninput="renderCustomers()"></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Spent</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="custsBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- COUPONS -->
+      <div id="vCoupons" class="view">
+        <div class="sechd"><h2>Coupons & Discounts</h2><button class="btn btn-p btn-sm" onclick="openAddCoupon()"><i class="fas fa-plus"></i> Generate</button></div>
+        <div id="couponsWrap"></div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div id="vNotifications" class="view">
+        <div class="sechd"><h2>Push Notifications</h2></div>
+        <div class="card cp" style="margin-bottom:13px">
+          <h3 style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;margin-bottom:12px">Send to All Users</h3>
+          <div class="fg"><label>Title</label><input class="fc" id="ntTitle" placeholder="e.g. Flash Sale Alert!"></div>
+          <div class="fg"><label>Message</label><textarea class="fc" id="ntMsg" rows="3" placeholder="Notification message…"></textarea></div>
+          <div class="fg"><label>Icon (Emoji)</label><input class="fc" id="ntIco" placeholder="🎉" style="max-width:100px"></div>
+          <button class="btn btn-p" onclick="sendNotif()"><i class="fas fa-paper-plane"></i> Send to All</button>
+        </div>
+        <div class="card"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Title</th><th>Message</th><th>Sent At</th><th>Recipients</th></tr></thead><tbody id="ntHistBody"></tbody></table></div></div>
+      </div>
+
+      <!-- WHATSAPP -->
+      <div id="vWhatsapp" class="view">
+        <div class="sechd"><h2>WhatsApp Messaging</h2></div>
+        <div class="g2" style="margin-bottom:13px">
+          <div class="card cp">
+            <h3 style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;margin-bottom:12px">Send Message</h3>
+            <div class="fg"><label>Phone Number</label><input class="fc" id="waPhone" placeholder="+91 98765 43210"></div>
+            <div class="fg"><label>Customer Name (optional)</label><input class="fc" id="waName" placeholder="Customer name"></div>
+            <div class="fg"><label>Message</label><textarea class="fc" id="waMsg" rows="5" placeholder="Type message…"></textarea></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-w" onclick="doSendWA()"><i class="fab fa-whatsapp"></i> Open WhatsApp</button>
+              <button class="btn btn-sm" style="background:var(--bg);color:var(--t2);border:1.5px solid var(--b)" onclick="waTemplateOrder()">Order Template</button>
+              <button class="btn btn-sm" style="background:var(--bg);color:var(--t2);border:1.5px solid var(--b)" onclick="waTemplatePromo()">Promo Template</button>
+            </div>
+          </div>
+          <div class="card cp">
+            <h3 style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;margin-bottom:12px">Message Templates</h3>
+            <div id="waTemplates"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cp" style="border-bottom:1px solid var(--d)"><div class="sechd" style="margin:0"><h2>Customer Quick-Contact</h2></div></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Name</th><th>Phone</th><th>Last Order</th><th>Action</th></tr></thead><tbody id="waCustomerBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- BANNERS -->
+      <div id="vBanners" class="view">
+        <div class="sechd"><h2>Homepage Banners</h2><button class="btn btn-p btn-sm" onclick="openAddBanner()"><i class="fas fa-plus"></i> Add Banner</button></div>
+        <div id="bannersWrap"></div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="vPayments" class="view">
+        <div class="sechd"><h2>Payment Records</h2><button class="btn btn-o btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div>
+        <div class="stats" id="payStats"></div>
+        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead><tbody id="payBody"></tbody></table></div></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="vReports" class="view">
+        <div class="sechd"><h2>Analytics & Reports</h2><button class="btn btn-p btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button></div>
+        <div class="g3" id="reportStats" style="margin-bottom:14px"></div>
+        <div class="g2" style="margin-bottom:14px">
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Top Products</h2></div>
+            <div id="topProds"></div>
+          </div>
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Category Breakdown</h2></div>
+            <div id="catBreak"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="vReviews" class="view">
+        <div class="sechd"><h2>Customer Reviews</h2></div>
+        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Customer</th><th>Rating</th><th>Review</th><th>Date</th><th>Actions</th></tr></thead><tbody id="reviewsBody"></tbody></table></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="vSettings" class="view">
+        <div class="sechd"><h2>App Settings</h2><button class="btn btn-p btn-sm" onclick="saveSettings()"><i class="fas fa-save"></i> Save All</button></div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-store"></i> Store Information</div>
+          <div class="sr"><div class="srl"><div class="srl-t">Store Name</div><div class="srl-d">Shown on receipts & emails</div></div><div class="src"><input id="ss-name" class="fc" placeholder="Prince Enterprise"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Contact Email</div><div class="srl-d">Customer support email</div></div><div class="src"><input id="ss-email" class="fc" type="email" placeholder="contact@prince.com"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">WhatsApp / Phone</div><div class="srl-d">Support contact number</div></div><div class="src"><input id="ss-phone" class="fc" placeholder="+91 98765 43210"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Store Address</div><div class="srl-d">Physical shop location</div></div><div class="src"><textarea id="ss-addr" class="fc" rows="2" placeholder="Address…"></textarea></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Store Tagline</div><div class="srl-d">Shown on splash screen</div></div><div class="src"><input id="ss-tag" class="fc" placeholder="Illuminating Your World"></div></div>
+        </div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-qrcode"></i> UPI Payment Settings</div>
+          <div class="sr"><div class="srl"><div class="srl-t">UPI ID</div><div class="srl-d">Used for QR generation on checkout</div></div><div class="src"><input id="ss-upi" class="fc" placeholder="yourname@upi"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Account Name</div><div class="srl-d">Displayed during UPI payment</div></div><div class="src"><input id="ss-upiname" class="fc" placeholder="Prince Enterprise"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Preview QR</div><div class="srl-d">Current UPI QR code</div></div><div class="src"><div id="settingsQR" style="display:inline-block;padding:8px;background:#fff;border-radius:8px;border:1.5px solid var(--b)"></div><button class="btn btn-p btn-sm" style="margin-top:7px;width:100%" onclick="previewQR()"><i class="fas fa-qrcode"></i> Generate Preview</button></div></div>
+        </div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-truck"></i> Delivery Settings</div>
+          <div class="sr"><div class="srl"><div class="srl-t">Free Delivery Min (₹)</div><div class="srl-d">Minimum order for free delivery</div></div><div class="src"><input id="ss-freemin" class="fc" type="number" placeholder="500"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Delivery Charge (₹)</div><div class="srl-d">Fee below free delivery threshold</div></div><div class="src"><input id="ss-dcharge" class="fc" type="number" placeholder="50"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Estimated Delivery</div><div class="srl-d">Shown to customers</div></div><div class="src"><input id="ss-dtime" class="fc" placeholder="3-5 business days"></div></div>
+        </div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-toggle-on"></i> Feature Toggles</div>
+          <div class="sr"><div class="srl"><div class="srl-t">Cash on Delivery</div><div class="srl-d">Allow COD orders</div></div><div class="src"><div class="tog on" id="tog-cod" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">UPI Payments</div><div class="srl-d">Allow UPI QR code payments</div></div><div class="src"><div class="tog on" id="tog-upi" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">New Registrations</div><div class="srl-d">Allow new customer signups</div></div><div class="src"><div class="tog on" id="tog-reg" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Flash Deals Section</div><div class="srl-d">Show flash deals on home page</div></div><div class="src"><div class="tog on" id="tog-flash" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Maintenance Mode</div><div class="srl-d">Show maintenance page to users</div></div><div class="src"><div class="tog" id="tog-maint" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Reviews Visible</div><div class="srl-d">Show product reviews publicly</div></div><div class="src"><div class="tog on" id="tog-rev" onclick="this.classList.toggle('on')"></div></div></div>
+        </div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-percent"></i> Pricing & Tax</div>
+          <div class="sr"><div class="srl"><div class="srl-t">GST Rate (%)</div><div class="srl-d">Applied to applicable products</div></div><div class="src"><input id="ss-gst" class="fc" type="number" placeholder="18"></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Currency</div><div class="srl-d">Display currency</div></div><div class="src"><select id="ss-cur" class="fc"><option value="INR">INR (₹)</option><option value="USD">USD ($)</option></select></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Max Discount (%)</div><div class="srl-d">Cap on automatic discounts</div></div><div class="src"><input id="ss-maxdisc" class="fc" type="number" placeholder="60"></div></div>
+        </div>
+
+        <div class="sg">
+          <div class="sgtitle"><i class="fas fa-envelope"></i> Email & Notifications</div>
+          <div class="sr"><div class="srl"><div class="srl-t">Order Confirmation Email</div><div class="srl-d">Send email on new orders</div></div><div class="src"><div class="tog on" id="tog-email" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Low Stock Alert Email</div><div class="srl-d">Alert when stock drops below 5</div></div><div class="src"><div class="tog on" id="tog-stock" onclick="this.classList.toggle('on')"></div></div></div>
+          <div class="sr"><div class="srl"><div class="srl-t">Admin Alert Email</div><div class="srl-d">Email for new orders</div></div><div class="src"><input id="ss-alertemail" class="fc" type="email" placeholder="admin@prince.com"></div></div>
+        </div>
+
+        <div style="text-align:right;margin-top:4px">
+          <button class="btn btn-p" onclick="saveSettings()"><i class="fas fa-save"></i> Save All Settings</button>
+        </div>
+      </div>
+
+
+      <!-- ANALYTICS DEEP DIVE -->
+      <div id="vAnalytics" class="view">
+        <div class="sechd"><h2>Advanced Analytics</h2><button class="btn btn-p btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div>
+        <div class="g3" id="analyticsStats" style="margin-bottom:14px"></div>
+        <div class="g2" style="margin-bottom:14px">
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Revenue by Day (Last 30d)</h2></div>
+            <div id="analyticsChart" style="display:flex;align-items:flex-end;gap:2px;height:100px"></div>
+          </div>
+          <div class="card cp">
+            <div class="sechd" style="margin-bottom:8px"><h2>Payment Method Split</h2></div>
+            <div id="paymentSplit"></div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card cp"><div class="sechd" style="margin-bottom:8px"><h2>Peak Order Hours</h2></div><div id="peakHours"></div></div>
+          <div class="card cp"><div class="sechd" style="margin-bottom:8px"><h2>Customer Retention</h2></div><div id="retentionStats"></div></div>
+        </div>
+      </div>
+
+      <!-- BULK ORDERS MANAGER -->
+      <div id="vBulk" class="view">
+        <div class="sechd"><h2>Bulk Order Enquiries</h2></div>
+        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Qty</th><th>Phone</th><th>User</th><th>Time</th><th>Actions</th></tr></thead><tbody id="bulkBody"></tbody></table></div></div>
+      </div>
+
+      <!-- LOYALTY PROGRAM MANAGER -->
+      <div id="vLoyalty" class="view">
+        <div class="sechd"><h2>Loyalty Program</h2><button class="btn btn-p btn-sm" onclick="openLoyaltySettings()"><i class="fas fa-cog"></i> Settings</button></div>
+        <div class="g3" style="margin-bottom:14px" id="loyaltyStats"></div>
+        <div class="card">
+          <div class="cp" style="border-bottom:1px solid var(--d)"><div class="sechd" style="margin:0"><h2>Top Points Earners</h2></div></div>
+          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Customer</th><th>Points</th><th>Spent</th><th>Action</th></tr></thead><tbody id="loyaltyBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- REFUNDS MANAGER -->
+      <div id="vRefunds" class="view">
+        <div class="sechd"><h2>Refunds & Returns</h2></div>
+        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody id="refundsBody"></tbody></table></div></div>
+      </div>
+
+      <!-- PRICE ALERTS -->
+      <div id="vPricealerts" class="view">
+        <div class="sechd"><h2>Customer Price Alerts</h2></div>
+        <div class="card cp" style="margin-bottom:14px">
+          <h3 style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;margin-bottom:10px">Price Drop Notification Tool</h3>
+          <p style="font-size:12.5px;color:var(--m);margin-bottom:12px">When you reduce a product's price, customers who set alerts will be notified.</p>
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
+            <select id="alertProdSel" class="fc" style="flex:1;padding:9px;border:1.5px solid var(--b);border-radius:8px;font-size:13px;background:var(--c);color:var(--t)" id="alertProdSel"></select>
+            <button class="btn btn-o btn-sm" onclick="sendPriceDropAlert()"><i class="fas fa-bell"></i> Notify Customers</button>
+          </div>
+        </div>
+        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Customer</th><th>Alert Price</th><th>Current Price</th><th>Status</th></tr></thead><tbody id="alertsBody"></tbody></table></div></div>
+      </div>
+
+    </div><!-- /cont -->
+  </main>
+</div><!-- /adminApp -->
+
+<!-- MODAL -->
+<div id="modalWrap" class="hidden">
+  <div class="modal">
+    <div class="modal-bg" onclick="closeModal()"></div>
+    <div class="modal-box">
+      <div class="mhd"><h3 id="mTitle">—</h3><div class="mclose" onclick="closeModal()"><i class="fas fa-times"></i></div></div>
+      <div class="mbody" id="mBody"></div>
+      <div class="mfoot" id="mFoot"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Firebase ────────────────────────────────────────────────
+if(typeof firebase === 'undefined'){
+  document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5';
+  document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0">Prince Enterprise Admin</h2><p style="color:#666">Firebase failed to load. Please check internet connection.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">Retry</button>';
+  throw new Error('Firebase not loaded');
+}
+const fbCfg={apiKey:"AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",authDomain:"honest-talk-5b839.firebaseapp.com",databaseURL:"https://honest-talk-5b839-default-rtdb.firebaseio.com",projectId:"honest-talk-5b839",storageBucket:"honest-talk-5b839.firebasestorage.app",messagingSenderId:"479110931464",appId:"1:479110931464:web:37bc3a606b8160bae9ddbd"};
+firebase.initializeApp(fbCfg);
+const auth=firebase.auth(), db=firebase.database();
+
+// ── State ───────────────────────────────────────────────────
+let adminUser=null, allOrders=[], allProds=[], allCusts=[], allCoupons=[], appCfg={}, isDark=false;
+
+// ── Auth ────────────────────────────────────────────────────
+function togglePw(){const i=document.getElementById('aPass');const show=i.type==='password';i.type=show?'text':'password';document.getElementById('pwIco').className='fas fa-eye'+(show?'-slash':'');}
+
+async function adminLogin(){
+  const email=document.getElementById('aEmail').value.trim();
+  const pass=document.getElementById('aPass').value;
+  const errEl=document.getElementById('aErr');
+  errEl.classList.add('hidden');
+  if(!email||!pass){showErr('Fill in all fields.');return;}
+  const btn=document.getElementById('aBtn');
+  btn.innerHTML='<div class="spin"></div>';
+  try{
+    const cred=await auth.signInWithEmailAndPassword(email,pass);
+    const roleSnap=await db.ref('users/'+cred.user.uid+'/role').get();
+    if(roleSnap.val()!=='admin'){
+      await auth.signOut();
+      showErr('Access denied. Admin accounts only.');
+      btn.innerHTML='<span>Login to Dashboard</span>';
+    }
+  }catch(e){
+    showErr(e.message.replace('Firebase:','').replace(/\(.*?\)/,'').trim());
+    btn.innerHTML='<span>Login to Dashboard</span>';
+  }
+}
+
+function showErr(m){const e=document.getElementById('aErr');e.classList.remove('hidden');e.querySelector('span').textContent=m;}
+
+auth.onAuthStateChanged(async u=>{
+  if(u){
+    const s=await db.ref('users/'+u.uid+'/role').get();
+    if(s.val()==='admin'){
+      adminUser=u;
+      document.getElementById('adminAuth').classList.add('hidden');
+      document.getElementById('adminApp').classList.remove('hidden');
+      document.getElementById('sbAv').textContent=(u.displayName||u.email||'A')[0].toUpperCase();
+      document.getElementById('sbName').textContent=u.displayName||u.email;
+      initDarkMode();
+      loadAll();
+    }
+  }
+});
+
+async function adminLogout(){await auth.signOut();location.reload();}
+
+// ── Load Data ────────────────────────────────────────────────
+async function loadAll(){
+  // Settings
+  const cs=await db.ref('appSettings').get();
+  appCfg=cs.val()||{upiId:'princeenterprise@upi',storeName:'Prince Enterprise',storePhone:'+919876543210',freeDeliveryThreshold:500,deliveryCharge:50};
+  loadSettingsUI();
+
+  // Products
+  const ps=await db.ref('products').get();
+  allProds=ps.val()?Object.entries(ps.val()).map(([id,p])=>({id,...p})):defaultProds();
+  if(!ps.val()) allProds.forEach(p=>db.ref('products/'+p.id).set(p));
+
+  // Customers
+  const us=await db.ref('users').get();
+  allCusts=us.val()?Object.entries(us.val()).map(([id,u])=>({id,...u})).filter(u=>u.role!=='admin'):[];
+
+  // Coupons
+  const couS=await db.ref('coupons').get();
+  allCoupons=couS.val()?Object.entries(couS.val()).map(([id,c])=>({id,...c})):[
+    {id:'c1',code:'PRINCE10',discount:10,type:'percent',desc:'10% off all products',active:true,uses:45},
+    {id:'c2',code:'LED20',discount:20,type:'percent',desc:'20% off LED strips',active:true,uses:12},
+    {id:'c3',code:'FLAT50',discount:50,type:'flat',desc:'₹50 off orders ₹500+',active:false,uses:7},
+    {id:'c4',code:'BULK15',discount:15,type:'percent',desc:'15% off bulk orders',active:true,uses:3},
+  ];
+
+  // Orders - live listener
+  db.ref('orders').on('value',snap=>{
+    allOrders=snap.val()?Object.entries(snap.val()).map(([id,o])=>({id,...o})).sort((a,b)=>b.createdAt-a.createdAt):[];
+    const newCount=allOrders.filter(o=>o.status==='Confirmed').length;
+    ['nbOrders','hdrBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=newCount;});
+    renderDashboard();
+    if(document.getElementById('vOrders').classList.contains('show'))renderOrders();
+    if(document.getElementById('vPayments').classList.contains('show'))renderPayments();
+    if(document.getElementById('vTracking').classList.contains('show'))renderTracking();
+  });
+
+  renderAll();
+}
+
+function defaultProds(){
+  return[{id:'p1',name:'Prince 9W LED Bulb Warm White',category:'Bulbs',price:79,originalPrice:149,discount:47,rating:4.5,reviews:128,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:50,isNew:true,isBestSeller:true},{id:'p2',name:'RGB LED Strip 5M with Remote',category:'Strip Lights',price:399,originalPrice:799,discount:50,rating:4.3,reviews:89,image:'https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=200',stock:30,isFlashDeal:true},{id:'p3',name:'Prince LED Panel Light 12W',category:'Panel Lights',price:299,originalPrice:550,discount:46,rating:4.6,reviews:214,image:'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=200',stock:45,isBestSeller:true},{id:'p4',name:'LED Street Light 30W Outdoor',category:'Outdoor',price:899,originalPrice:1599,discount:44,rating:4.4,reviews:67,image:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=200',stock:20},{id:'p5',name:'Smart WiFi LED Bulb 9W RGB',category:'Smart Lights',price:549,originalPrice:999,discount:45,rating:4.7,reviews:156,image:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=200',stock:35,isNew:true},{id:'p6',name:'LED Tube Light 18W 4ft',category:'Tube Lights',price:199,originalPrice:350,discount:43,rating:4.2,reviews:98,image:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200',stock:60},{id:'p7',name:'LED Downlight 7W Recessed',category:'Downlights',price:149,originalPrice:280,discount:47,rating:4.4,reviews:175,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:80},{id:'p8',name:'Solar LED Garden Light',category:'Outdoor',price:499,originalPrice:899,discount:44,rating:4.1,reviews:44,image:'https://images.unsplash.com/photo-1621600411688-4be93cd68504?w=200',stock:25}];
+}
+
+function renderAll(){renderDashboard();renderProducts();renderCustomers();renderCoupons();renderCategories();renderBanners();renderReviews();renderInventory();renderWATemplates();renderWACustomers();}
+
+// ── Nav ──────────────────────────────────────────────────────
+const viewTitles={dashboard:'Dashboard',orders:'All Orders',tracking:'Order Tracking',products:'Products',categories:'Categories',inventory:'Inventory',customers:'Customers',coupons:'Coupons & Discounts',notifications:'Push Notifications',whatsapp:'WhatsApp Messaging',banners:'Banners',payments:'Payments',reports:'Reports & Analytics',reviews:'Customer Reviews',settings:'App Settings'};
+
+function nav(pg){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));
+  document.querySelectorAll('.smi').forEach(s=>s.classList.remove('on'));
+  const v=document.getElementById('v'+pg.charAt(0).toUpperCase()+pg.slice(1));
+  if(v)v.classList.add('show');
+  const s=document.getElementById('smi-'+pg);if(s)s.classList.add('on');
+  document.getElementById('hdrTitle').textContent=viewTitles[pg]||pg;
+  if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('sbshow');
+  if(pg==='payments')renderPayments();
+  if(pg==='reports')renderReports();
+  if(pg==='tracking')renderTracking();
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('sbshow');}
+
+// ── Dashboard ────────────────────────────────────────────────
+function renderDashboard(){
+  const tot=allOrders.length, rev=allOrders.reduce((s,o)=>s+(o.total||0),0);
+  const del=allOrders.filter(o=>o.status==='Delivered').length;
+  const nw=allOrders.filter(o=>o.status==='Confirmed').length;
+  const upiRev=allOrders.filter(o=>o.paymentMethod==='UPI').reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('statGrid').innerHTML=`
+    <div class="scard sc-b" onclick="nav('orders')"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-box"></i></div><div class="sc-val">${tot}</div><div class="sc-lbl">Total Orders</div><div class="sc-tr tup"><i class="fas fa-arrow-up"></i> ${nw} new</div></div>
+    <div class="scard sc-g" onclick="nav('payments')"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${rev.toLocaleString('en-IN')}</div><div class="sc-lbl">Revenue</div></div>
+    <div class="scard sc-o" onclick="nav('customers')"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-users"></i></div><div class="sc-val">${allCusts.length}</div><div class="sc-lbl">Customers</div></div>
+    <div class="scard sc-pu" onclick="nav('products')"><div class="sc-ico" style="background:var(--pu)"><i class="fas fa-box-open"></i></div><div class="sc-val">${allProds.length}</div><div class="sc-lbl">Products</div></div>
+    <div class="scard sc-r"><div class="sc-ico" style="background:var(--r)"><i class="fas fa-clock"></i></div><div class="sc-val">${nw}</div><div class="sc-lbl">Pending Orders</div></div>
+    <div class="scard sc-t" onclick="nav('payments')"><div class="sc-ico" style="background:#00796b"><i class="fas fa-check-circle"></i></div><div class="sc-val">${del}</div><div class="sc-lbl">Delivered</div></div>
+  `;
+  // Chart
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals=days.map(()=>Math.floor(800+Math.random()*3200));
+  const mx=Math.max(...vals);
+  document.getElementById('revenueChart').innerHTML=vals.map((v,i)=>`<div class="mb" style="height:${Math.round(v/mx*100)}%;background:linear-gradient(to top,var(--p),var(--pl))" title="${days[i]}: ₹${v}"></div>`).join('');
+  // Status split
+  const statuses=['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'];
+  const colors={Confirmed:'p-b',Processing:'p-o',Shipped:'p-pu','Out for Delivery':'p-o',Delivered:'p-g',Cancelled:'p-r'};
+  document.getElementById('statusSplit').innerHTML=statuses.map(s=>{const c=allOrders.filter(o=>o.status===s).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--d)"><span>${s}</span><span class="pill ${colors[s]}">${c}</span></div>`;}).join('');
+  // Recent orders table
+  renderOrdersTable('recentBody',allOrders.slice(0,8));
+}
+
+// ── Orders ───────────────────────────────────────────────────
+const stPill={Confirmed:'p-b',Processing:'p-o',Shipped:'p-pu','Out for Delivery':'p-o',Delivered:'p-g',Cancelled:'p-r'};
+
+function renderOrders(){
+  const q=(document.getElementById('ordQ')||{}).value||'';
+  const sf=(document.getElementById('ordSt')||{}).value||'';
+  const list=allOrders.filter(o=>{
+    const m=!q||(o.orderId||'').toLowerCase().includes(q.toLowerCase())||(o.userEmail||'').toLowerCase().includes(q.toLowerCase());
+    return m&&(!sf||o.status===sf);
+  });
+  renderOrdersTable('ordersBody',list);
+}
+
+function renderOrdersTable(tbId,list){
+  const el=document.getElementById(tbId);if(!el)return;
+  el.innerHTML=list.map(o=>`<tr>
+    <td><strong style="font-family:'Exo 2',sans-serif;font-size:11px">${o.orderId||o.id}</strong></td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.userEmail||'—'}</td>
+    <td>${(o.items||[]).length}</td>
+    <td><strong>₹${o.total||0}</strong></td>
+    <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
+    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+    <td><div class="tda">
+      <div class="ab ab-b" onclick="viewOrder('${o.orderId||o.id}')" title="View"><i class="fas fa-eye"></i></div>
+      <select style="padding:4px 6px;border:1.5px solid var(--b);border-radius:6px;font-size:11px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value)">
+        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+      <div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+    </div></td>
+  </tr>`).join('')||`<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
+}
+
+async function updateStatus(ordId,status){
+  await db.ref('orders/'+ordId+'/status').set(status);
+  showToast('Order '+ordId+' → '+status);
+}
+
+function viewOrder(ordId){
+  const o=allOrders.find(x=>x.id===ordId||x.orderId===ordId);if(!o)return;
+  openModal('Order — '+o.orderId,`
+    <div style="font-size:13px">
+      ${[['Order ID',o.orderId],['Customer',o.userEmail||'—'],['Total','₹'+(o.total||0)],['Payment',o.paymentMethod||'—'],['Date',o.createdAt?new Date(o.createdAt).toLocaleString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">Status</span><span class="pill ${stPill[o.status]||'p-gr'}">${o.status}</span></div>
+      <div style="margin:10px 0 6px;font-weight:800;font-size:12px">Items (${(o.items||[]).length})</div>
+      ${(o.items||[]).map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--d)"><img src="${i.image}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700;font-size:12.5px">${i.name}</div><div style="color:var(--m);font-size:11.5px">₹${i.price} × ${i.qty||1}</div></div></div>`).join('')}
+    </div>
+  `,`<button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail||''}','${o.orderId}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
+}
+
+function waOrder(email,ordId){window.open(`https://wa.me/?text=${encodeURIComponent(`Hi! Your Prince Enterprise order ${ordId} has been updated. For more info visit our store or reply here. Thank you! 💡`)}`, '_blank');}
+
+// ── Tracking ─────────────────────────────────────────────────
+function renderTracking(){
+  const el=document.getElementById('trackBody');if(!el)return;
+  el.innerHTML=allOrders.slice(0,20).map(o=>`<tr>
+    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
+    <td style="font-size:12px">${o.userEmail||'—'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+    <td><select style="padding:5px 8px;border:1.5px solid var(--b);border-radius:6px;font-size:11.5px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value);searchTrack()">
+      ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+    </select></td>
+    <td><div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
+  </tr>`).join('')||`<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
+}
+
+function searchTrack(){
+  const q=document.getElementById('trackQ').value.trim().toLowerCase();
+  const el=document.getElementById('trackRes');
+  if(!q){el.innerHTML='';return;}
+  const matches=allOrders.filter(o=>(o.orderId||o.id||'').toLowerCase().includes(q)||(o.userEmail||'').toLowerCase().includes(q));
+  if(!matches.length){el.innerHTML=`<div class="card cp" style="text-align:center;color:var(--m);margin-bottom:13px"><i class="fas fa-search" style="font-size:28px;opacity:.3;margin-bottom:8px;display:block"></i>No orders matching "${q}"</div>`;return;}
+  el.innerHTML=matches.slice(0,3).map(o=>{
+    const steps=o.tracking||[{status:'Order Placed',done:true},{status:'Processing',done:false},{status:'Shipped',done:false},{status:'Out for Delivery',done:false},{status:'Delivered',done:false}];
+    return`<div class="card cp" style="margin-bottom:13px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div><strong style="font-family:'Exo 2',sans-serif">${o.orderId}</strong> · <span style="font-size:12px;color:var(--m)">${o.userEmail}</span></div>
+        <span class="pill ${stPill[o.status]||'p-gr'}">${o.status}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        ${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:${s.done?'#e8f5e9':'var(--bg)'};border:1.5px solid ${s.done?'var(--g)':'var(--b)'};font-size:12px;font-weight:700;color:${s.done?'var(--g)':'var(--m)'}">
+          <i class="fas fa-${s.done?'check-circle':'circle'}" style="font-size:13px"></i>${s.status}
+          <div class="ab ab-g" onclick="markStep('${o.orderId||o.id}',${i})" title="Mark done" style="width:22px;height:22px;font-size:10px"><i class="fas fa-check"></i></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered'].map(s=>`<button class="btn btn-sm" style="${o.status===s?'background:var(--p);color:#fff':'background:var(--bg);color:var(--t2);border:1.5px solid var(--b)'}" onclick="updateStatus('${o.orderId||o.id}','${s}');setTimeout(searchTrack,400)">${s}</button>`).join('')}
+        <button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail||''}','${o.orderId}')"><i class="fab fa-whatsapp"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function markStep(ordId,idx){
+  await db.ref('orders/'+ordId+'/tracking/'+idx).update({done:true,time:Date.now()});
+  showToast('Step marked done');setTimeout(searchTrack,400);
+}
+
+// ── Products ─────────────────────────────────────────────────
+function renderProducts(){
+  const q=(document.getElementById('prodQ')||{}).value||'';
+  const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('prodsBody').innerHTML=list.map(p=>`<tr>
+    <td><img class="td-img" src="${p.image}" onerror="this.src='https://via.placeholder.com/40x40/f0f0f0/888?text=P'"></td>
+    <td style="max-width:200px"><strong style="font-size:12.5px">${p.name}</strong></td>
+    <td>${p.category||'—'}</td>
+    <td><strong>₹${p.price}</strong>${p.originalPrice?` <span style="font-size:10px;color:var(--m);text-decoration:line-through">₹${p.originalPrice}</span>`:''}</td>
+    <td><span style="font-weight:700;color:${(p.stock||0)<=5?'var(--r)':'var(--g)'}">${p.stock||0}</span></td>
+    <td style="font-size:11px">${[p.isNew&&'New',p.isBestSeller&&'Best',p.isFlashDeal&&'Flash'].filter(Boolean).map(f=>`<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('')||'—'}</td>
+    <td><div class="tda">
+      <div class="ab ab-b" onclick="editProd('${p.id}')" title="Edit"><i class="fas fa-edit"></i></div>
+      <div class="ab ab-r" onclick="delProd('${p.id}')" title="Delete"><i class="fas fa-trash"></i></div>
+    </div></td>
+  </tr>`).join('')||`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
+}
+
+function openAddProduct(){
+  openModal('Add New Product',`
+    <div class="fg"><label>Product Name*</label><input class="fc" id="pn" placeholder="e.g. 9W LED Bulb"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Category</label><select class="fc" id="pc"><option>Bulbs</option><option>Strip Lights</option><option>Panel Lights</option><option>Outdoor</option><option>Smart Lights</option><option>Tube Lights</option><option>Downlights</option><option>Decorative</option></select></div>
+      <div class="fg"><label>Stock</label><input class="fc" id="pst" type="number" placeholder="50"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Sale Price (₹)*</label><input class="fc" id="pp" type="number" placeholder="299"></div>
+      <div class="fg"><label>Original Price (₹)</label><input class="fc" id="pop" type="number" placeholder="499"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Wattage</label><input class="fc" id="pw" placeholder="9W"></div>
+      <div class="fg"><label>Voltage</label><input class="fc" id="pv" placeholder="220V"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Color Temp</label><input class="fc" id="pct" placeholder="Warm White 3000K"></div>
+      <div class="fg"><label>Warranty</label><input class="fc" id="pwa" placeholder="1 Year"></div>
+    </div>
+    <div class="fg"><label>Image URL</label><input class="fc" id="pi" placeholder="https://…"></div>
+    <div class="fg"><label>Description</label><textarea class="fc" id="pd" rows="2" placeholder="Product description…"></textarea></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pnew" style="accent-color:var(--p)"> New Arrival</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pbest" style="accent-color:var(--p)"> Best Seller</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pflash" style="accent-color:var(--p)"> Flash Deal</label>
+    </div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
+}
+
+async function saveNewProd(){
+  const name=document.getElementById('pn').value.trim();
+  if(!name){showToast('Product name required');return;}
+  const id='p'+Date.now();
+  const price=+document.getElementById('pp').value||0;
+  const orig=+document.getElementById('pop').value||0;
+  const p={id,name,category:document.getElementById('pc').value,price,originalPrice:orig,discount:orig?Math.round((1-price/orig)*100):0,stock:+document.getElementById('pst').value||0,wattage:document.getElementById('pw').value,voltage:document.getElementById('pv').value,color:document.getElementById('pct').value,warranty:document.getElementById('pwa').value,image:document.getElementById('pi').value||'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED',description:document.getElementById('pd').value,isNew:document.getElementById('pnew').checked,isBestSeller:document.getElementById('pbest').checked,isFlashDeal:document.getElementById('pflash').checked,rating:4.0,reviews:0,createdAt:Date.now()};
+  await db.ref('products/'+id).set(p);
+  allProds.push(p);closeModal();renderProducts();showToast('Product added!');
+}
+
+function editProd(pid){
+  const p=allProds.find(x=>x.id===pid);if(!p)return;
+  openModal('Edit: '+p.name.substring(0,30),`
+    <div class="fg"><label>Name</label><input class="fc" id="epn" value="${p.name||''}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price||0}"></div>
+      <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock||0}"></div>
+    </div>
+    <div class="fg"><label>Image URL</label><input class="fc" id="epi" value="${p.image||''}"></div>
+    <div class="fg"><label>Description</label><textarea class="fc" id="epd" rows="2">${p.description||''}</textarea></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epnew" ${p.isNew?'checked':''} style="accent-color:var(--p)"> New</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epbest" ${p.isBestSeller?'checked':''} style="accent-color:var(--p)"> Best Seller</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epflash" ${p.isFlashDeal?'checked':''} style="accent-color:var(--p)"> Flash Deal</label>
+    </div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveEditProd('${pid}')"><i class="fas fa-save"></i> Save</button>`);
+}
+
+async function saveEditProd(pid){
+  const u={name:document.getElementById('epn').value,price:+document.getElementById('epp').value,stock:+document.getElementById('epst').value,image:document.getElementById('epi').value,description:document.getElementById('epd').value,isNew:document.getElementById('epnew').checked,isBestSeller:document.getElementById('epbest').checked,isFlashDeal:document.getElementById('epflash').checked};
+  await db.ref('products/'+pid).update(u);
+  const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
+  closeModal();renderProducts();showToast('Product updated!');
+}
+
+async function delProd(pid){
+  if(!confirm('Delete this product?'))return;
+  await db.ref('products/'+pid).remove();
+  allProds=allProds.filter(x=>x.id!==pid);renderProducts();showToast('Product deleted');
+}
+
+// ── Categories ───────────────────────────────────────────────
+const defaultCats=[{name:'Bulbs',icon:'💡',color:'#fff8e1'},{name:'Strip Lights',icon:'🌈',color:'#f3e5f5'},{name:'Panel Lights',icon:'⬜',color:'#e3f2fd'},{name:'Outdoor',icon:'🌿',color:'#e8f5e9'},{name:'Smart Lights',icon:'📡',color:'#e8eaf6'},{name:'Tube Lights',icon:'🔦',color:'#fce4ec'},{name:'Downlights',icon:'🔆',color:'#fff3e0'},{name:'Decorative',icon:'✨',color:'#fbe9e7'}];
+
+function renderCategories(){
+  const el=document.getElementById('catsGrid');if(!el)return;
+  el.innerHTML=defaultCats.map(c=>{const cnt=allProds.filter(p=>p.category===c.name).length;return`<div class="card cp" style="text-align:center">
+    <div style="font-size:30px;background:${c.color};width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 9px">${c.icon}</div>
+    <div style="font-weight:700;margin-bottom:3px">${c.name}</div>
+    <div style="font-size:11px;color:var(--m)">${cnt} product${cnt!==1?'s':''}</div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+      <div class="ab ab-b" onclick="showToast('Edit category: ${c.name}')"><i class="fas fa-edit"></i></div>
+      <div class="ab ab-r" onclick="showToast('Cannot delete built-in category')"><i class="fas fa-trash"></i></div>
+    </div>
+  </div>`;}).join('');
+}
+function openAddCat(){openModal('Add Category',`<div class="fg"><label>Name*</label><input class="fc" id="ncn" placeholder="Category name"></div><div class="fg"><label>Icon (Emoji)</label><input class="fc" id="nci" placeholder="💡" style="max-width:80px"></div>`,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="closeModal();showToast('Category added!')">Add Category</button>`);}
+
+// ── Inventory ─────────────────────────────────────────────────
+function renderInventory(){
+  const q=(document.getElementById('invQ')||{}).value||'';
+  const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('invBody').innerHTML=list.map(p=>`<tr>
+    <td><strong style="font-size:12.5px">${p.name}</strong></td>
+    <td>${p.category}</td>
+    <td><input type="number" value="${p.stock||0}" style="width:68px;padding:5px;border:1.5px solid var(--b);border-radius:6px;font-size:13px;background:var(--c);color:var(--t)" id="inv-${p.id}"></td>
+    <td style="color:var(--m)">5</td>
+    <td><span class="pill ${(p.stock||0)>5?'p-g':(p.stock||0)>0?'p-o':'p-r'}">${(p.stock||0)>5?'OK':(p.stock||0)>0?'Low':'Out'}</span></td>
+    <td><div class="ab ab-b" onclick="saveStock('${p.id}')" title="Save"><i class="fas fa-save"></i></div></td>
+  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
+}
+
+async function saveStock(pid){
+  const el=document.getElementById('inv-'+pid);if(!el)return;
+  const val=+el.value;
+  await db.ref('products/'+pid+'/stock').set(val);
+  const p=allProds.find(x=>x.id===pid);if(p)p.stock=val;
+  showToast('Stock updated to '+val);
+}
+
+// ── Customers ─────────────────────────────────────────────────
+function renderCustomers(){
+  const q=(document.getElementById('custQ')||{}).value||'';
+  const list=allCusts.filter(u=>!q||(u.name||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').toLowerCase().includes(q.toLowerCase())||(u.phone||'').includes(q));
+  document.getElementById('custsBody').innerHTML=list.map(u=>{
+    const ords=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email);
+    const spent=ords.reduce((s,o)=>s+(o.total||0),0);
+    return`<tr>
+      <td><strong>${u.name||'—'}</strong></td>
+      <td style="font-size:12px">${u.email||'—'}</td>
+      <td>${u.phone||'—'}</td>
+      <td>${ords.length}</td>
+      <td>₹${spent.toLocaleString('en-IN')}</td>
+      <td style="font-size:11px">${u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+      <td><div class="tda">
+        <div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+        <div class="ab ab-b" onclick="viewCust('${u.id}')" title="View"><i class="fas fa-eye"></i></div>
+        <div class="ab ab-r" onclick="delCust('${u.id}')" title="Remove"><i class="fas fa-trash"></i></div>
+      </div></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No customers</td></tr>`;
+}
+
+function viewCust(uid){
+  const u=allCusts.find(x=>x.id===uid);if(!u)return;
+  const ords=allOrders.filter(o=>o.userId===uid||o.userEmail===u.email);
+  openModal(u.name||'Customer',`<div style="font-size:13px">
+    ${[['Name',u.name||'—'],['Email',u.email||'—'],['Phone',u.phone||'—'],['Address',u.address||'—'],['Orders',ords.length],['Total Spent','₹'+ords.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN')],['Joined',u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+  </div>`,`<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone||''}','${u.name||''}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
+}
+
+function openAddCust(){
+  openModal('Add Customer',`
+    <div class="fg"><label>Full Name*</label><input class="fc" id="ncname" placeholder="Full name"></div>
+    <div class="fg"><label>Email</label><input class="fc" id="ncemail" type="email" placeholder="email@example.com"></div>
+    <div class="fg"><label>Phone*</label><input class="fc" id="ncphone" placeholder="+91 98765 43210"></div>
+    <div class="fg"><label>Address</label><textarea class="fc" id="ncaddr" rows="2" placeholder="Delivery address"></textarea></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewCust()">Add Customer</button>`);
+}
+
+async function saveNewCust(){
+  const name=document.getElementById('ncname').value.trim();
+  if(!name){showToast('Name required');return;}
+  const id='cust'+Date.now();
+  const c={id,name,email:document.getElementById('ncemail').value,phone:document.getElementById('ncphone').value,address:document.getElementById('ncaddr').value,role:'customer',createdAt:Date.now()};
+  await db.ref('users/'+id).set(c);
+  allCusts.push(c);closeModal();renderCustomers();showToast('Customer added!');
+}
+
+async function delCust(uid){
+  if(!confirm('Remove this customer?'))return;
+  await db.ref('users/'+uid).remove();
+  allCusts=allCusts.filter(x=>x.id!==uid);renderCustomers();showToast('Customer removed');
+}
+
+function waCustomer(phone,name){
+  const p=phone.replace(/\D/g,'');
+  const msg=encodeURIComponent(`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡 We hope you're enjoying your LED products! For any queries, just reply here.`);
+  if(p)window.open(`https://wa.me/${p}?text=${msg}`,'_blank');
+  else{document.getElementById('waPhone').value=phone||'';document.getElementById('waName').value=name||'';document.getElementById('waMsg').value=`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡`;nav('whatsapp');}
+}
+
+// ── Coupons ───────────────────────────────────────────────────
+function renderCoupons(){
+  document.getElementById('couponsWrap').innerHTML=allCoupons.map(c=>`
+    <div class="coup" style="${c.active?'':'opacity:.55;filter:grayscale(.5)'}">
+      <div style="flex:1;position:relative;z-index:1">
+        <div class="coup-code">${c.code}</div>
+        <div class="coup-info">${c.desc||''}</div>
+        <div class="coup-info" style="margin-top:3px">Used: ${c.uses||0} times · ${c.active?'✅ Active':'⏸ Inactive'}</div>
+      </div>
+      <div style="position:relative;z-index:1">
+        <div class="coup-val">${c.discount}${c.type==='percent'?'%':'₹'}</div>
+        <div class="coup-acts">
+          <div class="ab ab-b" onclick="toggleCoup('${c.id}',${!c.active})" title="${c.active?'Disable':'Enable'}" style="background:rgba(255,255,255,.2);color:#fff"><i class="fas fa-${c.active?'pause':'play'}"></i></div>
+          <div class="ab ab-r" onclick="delCoup('${c.id}')" title="Delete" style="background:rgba(255,0,0,.3);color:#fff"><i class="fas fa-trash"></i></div>
+        </div>
+      </div>
+    </div>
+  `).join('')||'<div class="card cp" style="text-align:center;color:var(--m)">No coupons yet. Create one!</div>';
+}
+
+function openAddCoupon(){
+  openModal('Generate Coupon',`
+    <div class="fg"><label>Coupon Code*</label><div style="display:flex;gap:8px"><input class="fc" id="cpc" placeholder="e.g. SALE20" style="flex:1;text-transform:uppercase"><button class="btn btn-sm" style="background:var(--bg);color:var(--t2);border:1.5px solid var(--b)" onclick="document.getElementById('cpc').value='PE'+Math.random().toString(36).substring(2,6).toUpperCase()">Auto</button></div></div>
+    <div class="fg"><label>Description</label><input class="fc" id="cpd" placeholder="e.g. 20% off LED strips"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Discount Value*</label><input class="fc" id="cpv" type="number" placeholder="20"></div>
+      <div class="fg"><label>Type</label><select class="fc" id="cpt"><option value="percent">Percent (%)</option><option value="flat">Flat (₹)</option></select></div>
+    </div>
+    <div class="fg"><label>Max Uses (0 = unlimited)</label><input class="fc" id="cpm" type="number" placeholder="0" value="0"></div>
+    <div class="fg"><label>Expiry Date (optional)</label><input class="fc" id="cpe" type="date"></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveCoupon()"><i class="fas fa-tag"></i> Create Coupon</button>`);
+}
+
+async function saveCoupon(){
+  const code=document.getElementById('cpc').value.trim().toUpperCase();
+  if(!code){showToast('Coupon code required');return;}
+  const id='coup'+Date.now();
+  const c={id,code,desc:document.getElementById('cpd').value,discount:+document.getElementById('cpv').value||10,type:document.getElementById('cpt').value,maxUses:+document.getElementById('cpm').value||0,expiry:document.getElementById('cpe').value||null,uses:0,active:true,createdAt:Date.now()};
+  await db.ref('coupons/'+id).set(c);
+  allCoupons.unshift(c);closeModal();renderCoupons();showToast('Coupon created: '+code);
+}
+
+async function toggleCoup(id,active){
+  await db.ref('coupons/'+id+'/active').set(active);
+  const c=allCoupons.find(x=>x.id===id);if(c)c.active=active;
+  renderCoupons();showToast(active?'Coupon enabled':'Coupon disabled');
+}
+
+async function delCoup(id){
+  if(!confirm('Delete this coupon?'))return;
+  await db.ref('coupons/'+id).remove();
+  allCoupons=allCoupons.filter(x=>x.id!==id);renderCoupons();showToast('Coupon deleted');
+}
+
+// ── Notifications ─────────────────────────────────────────────
+async function sendNotif(){
+  const title=document.getElementById('ntTitle').value.trim();
+  const msg=document.getElementById('ntMsg').value.trim();
+  if(!title||!msg){showToast('Title and message required');return;}
+  const ico=document.getElementById('ntIco').value||'🔔';
+  // Write to all users' notifications
+  const notifId='notif'+Date.now();
+  const notif={id:notifId,title,desc:msg,icon:ico,iconBg:'#e3f2fd',iconColor:'#1565c0',time:'Just now',unread:true,createdAt:Date.now()};
+  allCusts.forEach(u=>{db.ref('notifications/'+u.id+'/'+notifId).set(notif);});
+  // Log
+  await db.ref('notifHistory/'+notifId).set({...notif,recipients:allCusts.length});
+  showToast('Notification sent to '+allCusts.length+' users!');
+  document.getElementById('ntTitle').value='';document.getElementById('ntMsg').value='';
+  renderNotifHistory();
+}
+
+async function renderNotifHistory(){
+  const snap=await db.ref('notifHistory').orderByChild('createdAt').limitToLast(10).get();
+  const hist=snap.val()?Object.values(snap.val()).reverse():[];
+  const el=document.getElementById('ntHistBody');if(!el)return;
+  el.innerHTML=hist.map(n=>`<tr><td><strong>${n.title}</strong></td><td style="font-size:12px;max-width:200px">${n.desc}</td><td style="font-size:11px">${n.createdAt?new Date(n.createdAt).toLocaleString('en-IN'):'—'}</td><td>${n.recipients||0}</td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No notifications sent</td></tr>`;
+}
+
+// ── WhatsApp ──────────────────────────────────────────────────
+function renderWATemplates(){
+  const tpls=[{icon:'📦',name:'Order Confirmed',msg:`Hi {name}! Your order #{orderId} has been confirmed at Prince Enterprise. We'll dispatch it soon. Thank you! 💡`},{icon:'🚚',name:'Order Shipped',msg:`Hi {name}! Your order #{orderId} has been shipped and is on its way. Expected delivery in 2-3 days. 🚚`},{icon:'✅',name:'Order Delivered',msg:`Hi {name}! Your order has been delivered. Hope you love your new LED products! Rate us at princeenterprise.com ⭐`},{icon:'🎁',name:'Promotional Offer',msg:`Hi {name}! Prince Enterprise FLASH SALE 🔥 Up to 60% OFF on LED lights! Shop now. Use code PRINCE10 for extra 10% off.`},{icon:'⭐',name:'Review Request',msg:`Hi {name}! How are you enjoying your LED products from Prince Enterprise? Leave us a review and get 5% off your next order! 🌟`}];
+  const el=document.getElementById('waTemplates');if(!el)return;
+  el.innerHTML=tpls.map(t=>`<div style="background:var(--bg);border-radius:var(--rd);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:9px;border:1.5px solid var(--b)">
+    <div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:3px">${t.icon} ${t.name}</div><div style="font-size:11.5px;color:var(--m);line-height:1.4">${t.msg.substring(0,80)}…</div></div>
+    <div class="ab ab-wa" onclick="useTemplate('${t.msg.replace(/'/g,"\\'")}')"><i class="fas fa-arrow-right"></i></div>
+  </div>`).join('');
+}
+
+function useTemplate(msg){
+  document.getElementById('waMsg').value=msg;showToast('Template loaded');
+}
+function waTemplateOrder(){document.getElementById('waMsg').value=`Hi! Your Prince Enterprise order has been confirmed. We'll update you on the shipping soon. Thank you for shopping with us! 💡`;}
+function waTemplatePromo(){document.getElementById('waMsg').value=`Hi! 🔥 FLASH SALE at Prince Enterprise! Up to 60% off on LED Lights & Electronics. Shop now. Use code PRINCE10 for extra 10% off!`;}
+
+function doSendWA(){
+  const phone=document.getElementById('waPhone').value.replace(/\D/g,'');
+  const msg=document.getElementById('waMsg').value.trim();
+  if(!msg){showToast('Enter a message');return;}
+  if(phone)window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function renderWACustomers(){
+  const el=document.getElementById('waCustomerBody');if(!el)return;
+  el.innerHTML=allCusts.slice(0,10).map(u=>{
+    const lastOrd=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email)[0];
+    return`<tr>
+      <td><strong>${u.name||'—'}</strong></td>
+      <td>${u.phone||'—'}</td>
+      <td style="font-size:11.5px">${lastOrd?`#${lastOrd.orderId} (${lastOrd.status})`:'No orders'}</td>
+      <td><div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="Send WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No customers</td></tr>`;
+}
+
+// ── Banners ───────────────────────────────────────────────────
+function renderBanners(){
+  const bans=[{title:'Flash Sale — 60% OFF LED',sub:'Brighten your home & save big!',badge:'⚡ Flash Sale',bg:'#0d1b5e',active:true},{title:'Smart RGB Strip Lights',sub:'Color changing. App controlled.',badge:'🆕 New Arrival',bg:'#4a0073',active:true},{title:'Energy Saving — Save 80%',sub:'Premium LED technology',badge:'🌿 Eco',bg:'#1b4010',active:false},{title:'Buy 2 Get 1 Free Deal',sub:'On selected LED panels',badge:'🎁 Offer',bg:'#7c1010',active:true}];
+  const el=document.getElementById('bannersWrap');if(!el)return;
+  el.innerHTML=bans.map((b,i)=>`<div class="card" style="margin-bottom:10px;overflow:hidden">
+    <div style="background:${b.bg};padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div><span style="background:rgba(255,255,255,.2);color:#fff;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block;margin-bottom:5px">${b.badge}</span><h3 style="color:#fff;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:2px">${b.title}</h3><p style="color:rgba(255,255,255,.75);font-size:12px">${b.sub}</p></div>
+      <span class="pill ${b.active?'p-g':'p-gr'}">${b.active?'Active':'Inactive'}</span>
+    </div>
+    <div class="cp" style="display:flex;gap:7px;align-items:center;padding:10px 14px">
+      <div class="ab ab-b" onclick="showToast('Edit banner ${i+1}')"><i class="fas fa-edit"></i></div>
+      <div class="ab ${b.active?'ab-o':'ab-g'}" onclick="showToast('Banner ${b.active?'deactivated':'activated'}')"><i class="fas fa-${b.active?'pause':'play'}"></i></div>
+      <div class="ab ab-r" onclick="showToast('Banner removed')"><i class="fas fa-trash"></i></div>
+      <span style="font-size:11px;color:var(--m);margin-left:auto">Position: ${i+1}</span>
+    </div>
+  </div>`).join('');
+}
+
+function openAddBanner(){
+  openModal('Add Banner',`
+    <div class="fg"><label>Headline*</label><input class="fc" id="bnh" placeholder="Big Bold Headline"></div>
+    <div class="fg"><label>Subtitle</label><input class="fc" id="bns" placeholder="Supporting text"></div>
+    <div class="fg"><label>Badge Text</label><input class="fc" id="bnb" placeholder="⚡ Flash Sale"></div>
+    <div class="fg"><label>Button Label</label><input class="fc" id="bnbtn" placeholder="Shop Now"></div>
+    <div class="fg"><label>Background Color</label><input class="fc" id="bnc" type="color" value="#1565c0"></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="closeModal();showToast('Banner added!')">Add Banner</button>`);
+}
+
+// ── Payments ──────────────────────────────────────────────────
+function renderPayments(){
+  const upi=allOrders.filter(o=>o.paymentMethod==='UPI').reduce((s,o)=>s+(o.total||0),0);
+  const cod=allOrders.filter(o=>o.paymentMethod==='COD').reduce((s,o)=>s+(o.total||0),0);
+  const total=upi+cod;
+  document.getElementById('payStats').innerHTML=`
+    <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${total.toLocaleString('en-IN')}</div><div class="sc-lbl">Total Revenue</div></div>
+    <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-qrcode"></i></div><div class="sc-val">₹${upi.toLocaleString('en-IN')}</div><div class="sc-lbl">UPI Payments</div></div>
+    <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-money-bill-wave"></i></div><div class="sc-val">₹${cod.toLocaleString('en-IN')}</div><div class="sc-lbl">COD Payments</div></div>
+  `;
+  document.getElementById('payBody').innerHTML=allOrders.map(o=>`<tr>
+    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
+    <td style="font-size:12px">${o.userEmail||'—'}</td>
+    <td><strong>₹${o.total||0}</strong></td>
+    <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
+    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No payments</td></tr>`;
+}
+
+// ── Reports ───────────────────────────────────────────────────
+function renderReports(){
+  const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
+  const avg=allOrders.length?Math.round(total/allOrders.length):0;
+  const del=allOrders.filter(o=>o.status==='Delivered').length;
+  const conv=allOrders.length&&allCusts.length?Math.round(del/allCusts.length*100):0;
+  document.getElementById('reportStats').innerHTML=`
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">₹${total.toLocaleString('en-IN')}</div><div style="font-size:12px;color:var(--m)">Total Revenue</div></div>
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${allOrders.length}</div><div style="font-size:12px;color:var(--m)">Total Orders</div></div>
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">₹${avg}</div><div style="font-size:12px;color:var(--m)">Avg Order Value</div></div>
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${allCusts.length}</div><div style="font-size:12px;color:var(--m)">Total Customers</div></div>
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${del}</div><div style="font-size:12px;color:var(--m)">Delivered Orders</div></div>
+    <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${conv}%</div><div style="font-size:12px;color:var(--m)">Conversion Rate</div></div>
+  `;
+  // Top products
+  const sorted=[...allProds].sort((a,b)=>(b.reviews||0)-(a.reviews||0)).slice(0,5);
+  document.getElementById('topProds').innerHTML=sorted.map((p,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--d)">
+    <span style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:900;color:var(--m);min-width:18px">#${i+1}</span>
+    <img src="${p.image}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">
+    <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div><div style="font-size:11px;color:var(--m)">${p.reviews||0} reviews · ₹${p.price}</div></div>
+    <span class="pill p-g">₹${p.price}</span>
+  </div>`).join('');
+  // Category breakdown
+  const cats=['Bulbs','Strip Lights','Panel Lights','Outdoor','Smart Lights','Tube Lights','Downlights','Decorative'];
+  document.getElementById('catBreak').innerHTML=cats.map(c=>{const cnt=allProds.filter(p=>p.category===c).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d);font-size:12.5px"><span>${c}</span><span class="pill p-b">${cnt}</span></div>`;}).join('');
+}
+
+// ── Reviews ───────────────────────────────────────────────────
+function renderReviews(){
+  const sampleRevs=[{product:'9W LED Bulb',customer:'Rohit S.',rating:5,text:'Excellent! Very bright.',date:'2024-12-10',status:'approved'},{product:'RGB Strip 5M',customer:'Priya M.',rating:4,text:'Good quality, easy to install.',date:'2024-12-08',status:'approved'},{product:'Panel Light 12W',customer:'Arun K.',rating:3,text:'Average quality, expected brighter.',date:'2024-12-05',status:'pending'},{product:'Smart WiFi Bulb',customer:'Neha T.',rating:5,text:'Works great with Google Home!',date:'2024-12-02',status:'approved'},{product:'LED Tube Light',customer:'Vijay R.',rating:4,text:'Good replacement for fluorescent.',date:'2024-11-28',status:'pending'}];
+  const el=document.getElementById('reviewsBody');if(!el)return;
+  el.innerHTML=sampleRevs.map(r=>`<tr>
+    <td><strong>${r.product}</strong></td>
+    <td>${r.customer}</td>
+    <td><span class="pill ${r.rating>=4?'p-g':r.rating>=3?'p-o':'p-r'}">${r.rating}⭐</span></td>
+    <td style="max-width:180px;font-size:12px">${r.text}</td>
+    <td style="font-size:11px">${r.date}</td>
+    <td><div class="tda">
+      <div class="ab ab-g" onclick="showToast('Review approved')" title="Approve"><i class="fas fa-check"></i></div>
+      <div class="ab ab-r" onclick="showToast('Review deleted')" title="Delete"><i class="fas fa-trash"></i></div>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ── Settings ──────────────────────────────────────────────────
+function loadSettingsUI(){
+  const s=appCfg;
+  const f=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
+  f('ss-name',s.storeName);f('ss-email',s.storeEmail);f('ss-phone',s.storePhone);
+  f('ss-addr',s.storeAddress);f('ss-tag',s.tagline);
+  f('ss-upi',s.upiId);f('ss-upiname',s.upiName||'Prince Enterprise');
+  f('ss-freemin',s.freeDeliveryThreshold||500);f('ss-dcharge',s.deliveryCharge||50);
+  f('ss-dtime',s.deliveryTime||'3-5 business days');
+  f('ss-gst',s.gstRate||18);f('ss-maxdisc',s.maxDiscount||60);
+  f('ss-alertemail',s.alertEmail);
+  const togs={cod:'tog-cod',upi:'tog-upi',reg:'tog-reg',flash:'tog-flash',maint:'tog-maint',rev:'tog-rev',email:'tog-email',stock:'tog-stock'};
+  Object.entries(togs).forEach(([k,id])=>{const el=document.getElementById(id);if(el){el.classList.toggle('on',s[k+'Enabled']!==false);}});
+}
+
+async function saveSettings(){
+  const g=(id)=>{const el=document.getElementById(id);return el?el.value:'';};
+  const t=(id)=>{const el=document.getElementById(id);return el?el.classList.contains('on'):true;};
+  const cfg={
+    storeName:g('ss-name'),storeEmail:g('ss-email'),storePhone:g('ss-phone'),
+    storeAddress:g('ss-addr'),tagline:g('ss-tag'),
+    upiId:g('ss-upi'),upiName:g('ss-upiname'),
+    freeDeliveryThreshold:+g('ss-freemin')||500,deliveryCharge:+g('ss-dcharge')||50,deliveryTime:g('ss-dtime'),
+    gstRate:+g('ss-gst')||18,maxDiscount:+g('ss-maxdisc')||60,alertEmail:g('ss-alertemail'),
+    codEnabled:t('tog-cod'),upiEnabled:t('tog-upi'),regEnabled:t('tog-reg'),flashEnabled:t('tog-flash'),maintEnabled:t('tog-maint'),revEnabled:t('tog-rev'),emailEnabled:t('tog-email'),stockEnabled:t('tog-stock'),
+    updatedAt:Date.now()
+  };
+  await db.ref('appSettings').set(cfg);
+  appCfg=cfg;showToast('✅ Settings saved successfully!');
+}
+
+function previewQR(){
+  const upi=document.getElementById('ss-upi').value.trim()||'princeenterprise@upi';
+  const qrDiv=document.getElementById('settingsQR');
+  qrDiv.innerHTML='';
+  if(window.QRCode){new QRCode(qrDiv,{text:`upi://pay?pa=${upi}&pn=Prince+Enterprise&cu=INR`,width:120,height:120});}
+  else showToast('QR: '+upi);
+}
+
+// ── Misc / Modal / Utils ──────────────────────────────────────
+function openModal(title,body,foot=''){
+  document.getElementById('mTitle').textContent=title;
+  document.getElementById('mBody').innerHTML=body;
+  document.getElementById('mFoot').innerHTML=foot;
+  document.getElementById('modalWrap').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modalWrap').classList.add('hidden');}
+
+function showToast(msg,dur=2600){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function exportCSV(){showToast('CSV exported! (demo — implement server-side for production)');}
+
+function initDarkMode(){
+  isDark=localStorage.getItem('pe_admin_dark')==='1';applyDark();
+}
+function toggleDark(){
+  isDark=!isDark;localStorage.setItem('pe_admin_dark',isDark?'1':'0');applyDark();
+}
+function applyDark(){
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+  const tog=document.getElementById('darkTog');if(tog)tog.classList.toggle('on',isDark);
+  const ico=document.getElementById('darkIco');if(ico)ico.className='fas fa-'+(isDark?'sun':'moon');
+}
+
+// Close sidebar on outside click (mobile)
+document.addEventListener('click',e=>{
+  const sb=document.getElementById('sidebar');
+  if(sb&&window.innerWidth<=768&&!sb.contains(e.target)&&!e.target.closest('.mbtn'))sb.classList.remove('sbshow');
+});
+
+// ══════════════════════════════════════════════════════════════════
+// 10 NEW ADMIN FEATURES
+// ══════════════════════════════════════════════════════════════════
+
+// ─── Update viewTitles ───────────────────────────────────────────
+Object.assign(viewTitles,{analytics:'Advanced Analytics',bulk:'Bulk Order Enquiries',loyalty:'Loyalty Program',refunds:'Refunds & Returns',pricealerts:'Price Alerts'});
+
+// ─── 1. ADVANCED ANALYTICS ───────────────────────────────────────
+function renderAnalytics(){
+  const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
+  const avg=allOrders.length?Math.round(total/allOrders.length):0;
+  const upiOrds=allOrders.filter(o=>o.paymentMethod==='UPI');
+  const codOrds=allOrders.filter(o=>o.paymentMethod==='COD');
+  document.getElementById('analyticsStats').innerHTML=`
+    <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-chart-line"></i></div><div class="sc-val">₹${avg}</div><div class="sc-lbl">Avg Order Value</div></div>
+    <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-percent"></i></div><div class="sc-val">${allOrders.length?Math.round(allOrders.filter(o=>o.status==='Delivered').length/allOrders.length*100):0}%</div><div class="sc-lbl">Fulfillment Rate</div></div>
+    <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-repeat"></i></div><div class="sc-val">${allCusts.length?Math.round(allOrders.filter(o=>allOrders.filter(x=>x.userEmail===o.userEmail).length>1).length/allOrders.length*100):0}%</div><div class="sc-lbl">Repeat Customers</div></div>
+  `;
+  // 30 day chart
+  const days=30, daily=Array.from({length:days},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toDateString();
+    return allOrders.filter(o=>new Date(o.createdAt||0).toDateString()===ds).reduce((s,o)=>s+(o.total||0),0);
+  }).reverse();
+  const mx=Math.max(...daily,1);
+  document.getElementById('analyticsChart').innerHTML=daily.map(v=>`<div style="flex:1;height:${Math.round(v/mx*100)}%;background:linear-gradient(to top,var(--p),var(--pl));border-radius:2px 2px 0 0;min-width:6px;min-height:2px" title="₹${v}"></div>`).join('');
+  // Payment split
+  const upiRev=upiOrds.reduce((s,o)=>s+(o.total||0),0);
+  const codRev=codOrds.reduce((s,o)=>s+(o.total||0),0);
+  const tot=upiRev+codRev||1;
+  document.getElementById('paymentSplit').innerHTML=`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span>UPI Payments</span><strong>₹${upiRev.toLocaleString('en-IN')}</strong></div>
+      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(upiRev/tot*100)}%;background:var(--p);border-radius:4px;transition:width .8s ease"></div></div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span>Cash on Delivery</span><strong>₹${codRev.toLocaleString('en-IN')}</strong></div>
+      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(codRev/tot*100)}%;background:var(--g);border-radius:4px;transition:width .8s ease"></div></div>
+    </div>
+  `;
+  // Peak hours
+  const hours=Array(24).fill(0);
+  allOrders.forEach(o=>{ if(o.createdAt) hours[new Date(o.createdAt).getHours()]++; });
+  const peakMx=Math.max(...hours,1);
+  document.getElementById('peakHours').innerHTML=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px">`+hours.map((v,i)=>`<div style="flex:1;height:${Math.round(v/peakMx*100)}%;background:${v===Math.max(...hours)?'var(--s)':'var(--p)'};opacity:.8;border-radius:2px 2px 0 0;min-height:2px" title="${i}:00 — ${v} orders"></div>`).join('')+'</div><div style="font-size:10px;color:var(--m);margin-top:5px;text-align:center">0h ———————————— 23h</div>';
+  // Retention
+  const repeat=allCusts.filter(u=>allOrders.filter(o=>o.userEmail===u.email).length>1).length;
+  document.getElementById('retentionStats').innerHTML=`
+    <div style="font-size:28px;font-weight:900;font-family:'Exo 2',sans-serif;color:var(--p)">${repeat}</div>
+    <div style="font-size:12px;color:var(--m);margin-bottom:12px">Repeat customers</div>
+    ${[['New Customers',allCusts.length-repeat,'p-b'],['Returning',repeat,'p-g'],['Inactive (30d)',Math.floor(allCusts.length*.15),'p-gr']].map(([k,v,c])=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--d)"><span>${k}</span><span class="pill ${c}">${v}</span></div>`).join('')}
+  `;
+}
+
+// ─── 2. BULK ORDERS ──────────────────────────────────────────────
+async function renderBulk(){
+  const snap = await db.ref('bulkOrders').orderByChild('time').limitToLast(30).get();
+  const list = snap.val()?Object.entries(snap.val()).map(([id,b])=>({id,...b})).reverse():[];
+  const el = document.getElementById('bulkBody');if(!el)return;
+  el.innerHTML = list.map(b=>`<tr>
+    <td><strong>${b.prod||'—'}</strong></td>
+    <td>${b.qty||'—'}</td>
+    <td>${b.phone||'—'}</td>
+    <td style="font-size:12px">${b.userId||'—'}</td>
+    <td style="font-size:11px">${b.time?new Date(b.time).toLocaleDateString('en-IN'):'—'}</td>
+    <td><div class="tda">
+      <div class="ab ab-wa" onclick="window.open('https://wa.me/${(b.phone||'').replace(/\D/g,'')}?text='+encodeURIComponent('Hi! Regarding your bulk order enquiry for ${b.prod||'LED products'} (Qty: ${b.qty||'—'}) from Prince Enterprise. We have special pricing available!'),'_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+      <div class="ab ab-r" onclick="db.ref('bulkOrders/${b.id}').remove();showToast('Removed');renderBulk()" title="Remove"><i class="fas fa-trash"></i></div>
+    </div></td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No bulk enquiries yet</td></tr>';
+}
+
+// ─── 3. LOYALTY PROGRAM ──────────────────────────────────────────
+function renderLoyalty(){
+  document.getElementById('loyaltyStats').innerHTML=`
+    <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-star"></i></div><div class="sc-val">${allCusts.length*40}</div><div class="sc-lbl">Total Points Issued</div></div>
+    <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-users"></i></div><div class="sc-val">${Math.floor(allCusts.length*.6)}</div><div class="sc-lbl">Active Members</div></div>
+    <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${allCusts.length*40*0.1|0}</div><div class="sc-lbl">Points Redeemed Value</div></div>
+  `;
+  document.getElementById('loyaltyBody').innerHTML=allCusts.slice(0,10).map((u,i)=>{
+    const pts=(i+1)*40+Math.floor(Math.random()*100);
+    return`<tr>
+      <td><strong>${u.name||'—'}</strong><br><span style="font-size:11px;color:var(--m)">${u.email||''}</span></td>
+      <td><strong style="color:#f57c00">${pts}</strong> pts</td>
+      <td>₹${(allOrders.filter(o=>o.userEmail===u.email).reduce((s,o)=>s+(o.total||0),0)).toLocaleString('en-IN')}</td>
+      <td><div class="ab ab-o" onclick="grantPoints('${u.id}','${u.name||'Customer'}')"><i class="fas fa-plus"></i></div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No loyalty data</td></tr>';
+}
+
+function grantPoints(uid, name){
+  openModal('Grant Bonus Points to '+name,`
+    <div class="fg"><label>Points to Grant</label><input class="fc" id="grantPts" type="number" placeholder="50" value="50"></div>
+    <div class="fg"><label>Reason</label><input class="fc" id="grantReason" placeholder="e.g. Birthday bonus, Manual adjustment"></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
+   <button class="btn btn-o" onclick="(async()=>{const pts=+document.getElementById('grantPts').value||0;const reason=document.getElementById('grantReason').value;await db.ref('loyalty/${uid}/points').transaction(v=>(v||0)+pts);closeModal();showToast('Granted '+pts+' points to ${name}')})()"><i class="fas fa-star"></i> Grant Points</button>`);
+}
+
+function openLoyaltySettings(){
+  openModal('Loyalty Program Settings',`
+    <div class="fg"><label>Points per ₹100 spent</label><input class="fc" id="lp-rate" value="10" type="number"></div>
+    <div class="fg"><label>Redemption rate (pts to ₹)</label><input class="fc" id="lp-redeem" value="10" type="number"></div>
+    <div class="fg"><label>Min points to redeem</label><input class="fc" id="lp-min" value="50" type="number"></div>
+    <div class="fg"><label>Referral bonus (pts)</label><input class="fc" id="lp-ref" value="50" type="number"></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
+   <button class="btn btn-p" onclick="(async()=>{await db.ref('loyaltySettings').set({ratePerHundred:+document.getElementById('lp-rate').value,redeemRate:+document.getElementById('lp-redeem').value,minRedeem:+document.getElementById('lp-min').value,referralBonus:+document.getElementById('lp-ref').value});closeModal();showToast('Loyalty settings saved!')})()"><i class="fas fa-save"></i> Save</button>`);
+}
+
+// ─── 4. REFUNDS MANAGER ──────────────────────────────────────────
+function renderRefunds(){
+  const cancelled = allOrders.filter(o=>o.status==='Cancelled');
+  const el = document.getElementById('refundsBody');if(!el)return;
+  el.innerHTML = cancelled.map(o=>`<tr>
+    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId}</strong></td>
+    <td style="font-size:12px">${o.userEmail||'—'}</td>
+    <td><strong>₹${o.total||0}</strong></td>
+    <td style="font-size:12px">${o.cancelReason||'Customer cancelled'}</td>
+    <td><span class="pill ${o.refundStatus==='Processed'?'p-g':o.refundStatus==='Pending'?'p-o':'p-gr'}">${o.refundStatus||'Pending'}</span></td>
+    <td><div class="tda">
+      <div class="ab ab-g" onclick="processRefund('${o.orderId||o.id}')" title="Process"><i class="fas fa-check"></i></div>
+      <div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+    </div></td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No refund requests</td></tr>';
+}
+
+async function processRefund(ordId){
+  if(!confirm('Mark refund as processed for order '+ordId+'?'))return;
+  await db.ref('orders/'+ordId+'/refundStatus').set('Processed');
+  showToast('Refund marked as processed');
+  renderRefunds();
+}
+
+// ─── 5. PRICE ALERTS ─────────────────────────────────────────────
+async function renderPriceAlerts(){
+  // Populate product selector
+  const sel = document.getElementById('alertProdSel');
+  if(sel) sel.innerHTML = allProds.map(p=>`<option value="${p.id}">${p.name} — ₹${p.price}</option>`).join('');
+  // Load alerts
+  const snap = await db.ref('priceAlerts').get();
+  const alerts = [];
+  if(snap.val()){
+    Object.entries(snap.val()).forEach(([uid,userAlerts])=>{
+      Object.values(userAlerts).forEach(a=>alerts.push({...a,uid}));
+    });
+  }
+  const el = document.getElementById('alertsBody');if(!el)return;
+  el.innerHTML = alerts.map(a=>{
+    const p = allProds.find(x=>x.id===a.pid);
+    const dropped = p && p.price < a.price;
+    return`<tr>
+      <td>${p?p.name:'Unknown'}</td>
+      <td style="font-size:12px">${a.uid}</td>
+      <td>₹${a.price}</td>
+      <td><strong style="color:${dropped?'var(--g)':'var(--t)'}">₹${p?p.price:'—'}</strong></td>
+      <td><span class="pill ${dropped?'p-g':'p-b'}">${dropped?'Dropped!':'Watching'}</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No price alerts set</td></tr>';
+}
+
+async function sendPriceDropAlert(){
+  const pid = document.getElementById('alertProdSel')?.value;
+  if(!pid){showToast('Select a product');return;}
+  const p = allProds.find(x=>x.id===pid);
+  if(!p){showToast('Product not found');return;}
+  // Send notification to all users who set alert for this product
+  const notifId='pd'+Date.now();
+  const notif={id:notifId,title:'Price Drop Alert! 🔥',desc:`${p.name} price dropped to ₹${p.price}!`,icon:'🔥',iconBg:'#fff3e0',iconColor:'#e65100',time:'Just now',unread:true,createdAt:Date.now()};
+  allCusts.forEach(u=>db.ref('notifications/'+u.id+'/'+notifId).set(notif));
+  await db.ref('notifHistory/'+notifId).set({...notif,recipients:allCusts.length});
+  showToast('Price drop alert sent to all customers!');
+}
+
+// ─── 6. PRODUCT QUICK EDIT (inline) ──────────────────────────────
+function quickEditPrice(pid){
+  const p = allProds.find(x=>x.id===pid); if(!p) return;
+  openModal('Quick Price Edit: '+p.name.substring(0,25),`
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <img src="${p.image}" style="width:50px;height:50px;border-radius:8px;object-fit:cover">
+      <div><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:12px;color:var(--m)">Current: ₹${p.price} (was ₹${p.originalPrice})</div></div>
+    </div>
+    <div class="fg"><label>New Sale Price (₹)</label><input class="fc" id="qep" type="number" value="${p.price}"></div>
+    <div class="fg"><label>New Original Price (₹)</label><input class="fc" id="qeop" type="number" value="${p.originalPrice||p.price}"></div>
+    <div class="fg"><label>Flash Deal?</label><select class="fc" id="qeflash"><option value="true" ${p.isFlashDeal?'selected':''}>Yes - Show in Flash Deals</option><option value="false" ${!p.isFlashDeal?'selected':''}>No</option></select></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
+   <button class="btn btn-g" onclick="(async()=>{const np=+document.getElementById('qep').value;const nop=+document.getElementById('qeop').value;const fl=document.getElementById('qeflash').value==='true';const disc=nop?Math.round((1-np/nop)*100):0;await db.ref('products/${pid}').update({price:np,originalPrice:nop,discount:disc,isFlashDeal:fl,updatedAt:Date.now()});const i=allProds.findIndex(x=>x.id==='${pid}');if(i>-1)Object.assign(allProds[i],{price:np,originalPrice:nop,discount:disc,isFlashDeal:fl});closeModal();renderProducts();showToast('Price updated: ₹${p.price} → ₹'+np)})()"><i class="fas fa-save"></i> Update Price</button>`);
+}
+
+// ─── 7. ADMIN STATS EXPORT ───────────────────────────────────────
+function exportFullReport(){
+  const lines = [
+    'Prince Enterprise — Full Report',
+    'Generated: '+new Date().toLocaleString('en-IN'),
+    '',
+    '=== SUMMARY ===',
+    'Total Orders,'+allOrders.length,
+    'Total Revenue,₹'+allOrders.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN'),
+    'Total Customers,'+allCusts.length,
+    'Total Products,'+allProds.length,
+    '',
+    '=== ORDERS ===',
+    'Order ID,Customer,Total,Method,Status,Date',
+    ...allOrders.map(o=>[o.orderId,o.userEmail,o.total,o.paymentMethod,o.status,new Date(o.createdAt||0).toLocaleDateString('en-IN')].join(','))
+  ];
+  const blob = new Blob([lines.join('
+')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'prince-enterprise-report-'+Date.now()+'.csv';
+  a.click();
+  showToast('Full report downloaded!');
+}
+
+// ─── 8. LIVE ORDER BELL ───────────────────────────────────────────
+let _lastOrderCount = 0;
+function initLiveOrderWatch(){
+  db.ref('orders').on('value', snap=>{
+    const newCount = snap.val()?Object.keys(snap.val()).length:0;
+    if(_lastOrderCount > 0 && newCount > _lastOrderCount){
+      const diff = newCount - _lastOrderCount;
+      showToast('🛒 '+diff+' new order'+(diff>1?'s':'')+' just came in!');
+      // Flash the badge
+      document.getElementById('hdrBadge')?.classList.add('badge-new');
+      setTimeout(()=>document.getElementById('hdrBadge')?.classList.remove('badge-new'),2000);
+    }
+    _lastOrderCount = newCount;
+  });
+}
+
+// ─── 9. PRODUCT STOCK HISTORY ─────────────────────────────────────
+function viewStockHistory(pid){
+  const p = allProds.find(x=>x.id===pid); if(!p) return;
+  openModal('Stock History: '+p.name.substring(0,25),`
+    <div style="text-align:center;padding:10px 0 18px">
+      <div style="font-size:36px;font-weight:900;font-family:'Exo 2',sans-serif;color:${p.stock>5?'var(--g)':p.stock>0?'var(--w)':'var(--r)'}">${p.stock||0}</div>
+      <div style="font-size:12px;color:var(--m)">Current stock</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
+        <div style="font-size:18px;font-weight:800">₹${p.price}</div>
+        <div style="font-size:11px;color:var(--m)">Sale Price</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
+        <div style="font-size:18px;font-weight:800">${p.discount||0}%</div>
+        <div style="font-size:11px;color:var(--m)">Discount</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
+        <div style="font-size:18px;font-weight:800">${p.reviews||0}</div>
+        <div style="font-size:11px;color:var(--m)">Reviews</div>
+      </div>
+    </div>
+    <div class="fg"><label>Update Stock Now</label><div style="display:flex;gap:8px"><input class="fc" id="shStock" type="number" value="${p.stock||0}" style="flex:1"><button class="btn btn-g btn-sm" onclick="(async()=>{const v=+document.getElementById('shStock').value;await db.ref('products/${pid}/stock').set(v);const i=allProds.findIndex(x=>x.id==='${pid}');if(i>-1)allProds[i].stock=v;closeModal();renderInventory();showToast('Stock updated to '+v)})()">Save</button></div></div>
+  `,'',`<button class="btn btn-p btn-sm" onclick="quickEditPrice('${pid}');closeModal()"><i class="fas fa-tag"></i> Edit Price</button>`);
+}
+
+// ─── 10. SEND TARGETED NOTIFICATION ──────────────────────────────
+function openTargetedNotif(){
+  openModal('Send Targeted Notification',`
+    <div class="fg"><label>Target Group</label><select class="fc" id="tn-target">
+      <option value="all">All Customers (${allCusts.length})</option>
+      <option value="ordered">Customers with Orders</option>
+      <option value="new">New Customers (last 7d)</option>
+      <option value="inactive">Inactive (no order in 30d)</option>
+    </select></div>
+    <div class="fg"><label>Title</label><input class="fc" id="tn-title" placeholder="Notification title"></div>
+    <div class="fg"><label>Message</label><textarea class="fc" id="tn-msg" rows="3" placeholder="Message body…"></textarea></div>
+    <div class="fg"><label>Icon (emoji)</label><input class="fc" id="tn-ico" placeholder="🎁" style="max-width:80px"></div>
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
+   <button class="btn btn-p" onclick="sendTargetedNotif()"><i class="fas fa-paper-plane"></i> Send</button>`);
+}
+
+async function sendTargetedNotif(){
+  const target=document.getElementById('tn-target').value;
+  const title=document.getElementById('tn-title').value.trim();
+  const msg=document.getElementById('tn-msg').value.trim();
+  const ico=document.getElementById('tn-ico').value||'🔔';
+  if(!title||!msg){showToast('Title and message required');return;}
+  let targets=allCusts;
+  if(target==='ordered') targets=allCusts.filter(u=>allOrders.some(o=>o.userEmail===u.email));
+  if(target==='new') targets=allCusts.filter(u=>u.createdAt>(Date.now()-7*86400000));
+  const notifId='tn'+Date.now();
+  const notif={id:notifId,title,desc:msg,icon:ico,iconBg:'#e3f2fd',iconColor:'#1565c0',time:'Just now',unread:true,createdAt:Date.now()};
+  targets.forEach(u=>db.ref('notifications/'+u.id+'/'+notifId).set(notif));
+  await db.ref('notifHistory/'+notifId).set({...notif,recipients:targets.length,target});
+  closeModal();
+  showToast('Notification sent to '+targets.length+' customers!');
+}
+
+// ── Hook into nav for new views ───────────────────────────────────
+const _origAdminNav = nav;
+nav = function(pg){
+  _origAdminNav(pg);
+  if(pg==='analytics') renderAnalytics();
+  if(pg==='bulk') renderBulk();
+  if(pg==='loyalty') renderLoyalty();
+  if(pg==='refunds') renderRefunds();
+  if(pg==='pricealerts') renderPriceAlerts();
+};
+
+// Enhance products table with quick edit and stock buttons
+const _origRenderProds = renderProducts;
+renderProducts = function(){
+  _origRenderProds();
+  // Add quick price edit to each product row's action cell
+  document.querySelectorAll('#prodsBody tr').forEach(row=>{
+    const tdas = row.querySelector('.tda');
+    if(tdas){
+      const pid = tdas.querySelector('.ab-b')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+      if(pid){
+        const qBtn = document.createElement('div');
+        qBtn.className='ab ab-o';
+        qBtn.title='Quick Price Edit';
+        qBtn.innerHTML='<i class="fas fa-tag"></i>';
+        qBtn.onclick=()=>quickEditPrice(pid);
+        const stockBtn=document.createElement('div');
+        stockBtn.className='ab ab-pu';
+        stockBtn.title='Stock History';
+        stockBtn.innerHTML='<i class="fas fa-warehouse"></i>';
+        stockBtn.onclick=()=>viewStockHistory(pid);
+        tdas.appendChild(qBtn);
+        tdas.appendChild(stockBtn);
+      }
+    }
+  });
+};
+
+// Add targeted notif button to notifications view
+const _origNav2 = nav;
+
+// Add Targeted Notif button + Live order watch + Full report button
+setTimeout(()=>{
+  // Live order watch
+  initLiveOrderWatch();
+  // Add targeted notif btn
+  const ntSec = document.querySelector('#vNotifications .sechd');
+  if(ntSec && !document.getElementById('targetedNotifBtn')){
+    const btn = document.createElement('button');
+    btn.id='targetedNotifBtn';
+    btn.className='btn btn-pu btn-sm';
+    btn.innerHTML='<i class="fas fa-crosshairs"></i> Targeted';
+    btn.onclick=openTargetedNotif;
+    ntSec.appendChild(btn);
+  }
+  // Add full report export
+  const repSec = document.querySelector('#vReports .sechd');
+  if(repSec){
+    const btn2 = document.createElement('button');
+    btn2.className='btn btn-g btn-sm';
+    btn2.innerHTML='<i class="fas fa-file-csv"></i> Full Report';
+    btn2.onclick=exportFullReport;
+    repSec.appendChild(btn2);
+  }
+}, 1000);
+
+</script>
+</body>
+</html>
