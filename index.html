@@ -6,15 +6,23 @@
 <title>Prince Enterprise – Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
 <style>
 :root{--p:#2874f0;--pd:#1565c0;--pl:#e8f0fd;--s:#fb641b;--g:#26a541;--r:#ff4141;--w:#f9a825;--pu:#7b1fa2;--bg:#f0f2f5;--c:#fff;--c2:#f8f9fa;--t:#212121;--t2:#535766;--m:#878787;--b:#e0e0e0;--d:#f0f0f0;--sb:235px;--sh:0 1px 4px rgba(0,0,0,.08);--sh2:0 2px 12px rgba(0,0,0,.13);--sh3:0 8px 32px rgba(0,0,0,.15);--rd:10px;--tr:all .25s ease}
 [data-theme=dark]{--bg:#0e0e1a;--c:#17172b;--c2:#1e1e32;--t:#e8eaf6;--t2:#b0bec5;--m:#78909c;--b:#2a2a44;--d:#1e1e36}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);transition:background .3s,color .3s;overflow-x:hidden;min-height:100vh}
-a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cursor:pointer;border:none;background:none;font-family:inherit}input,select,textarea{font-family:inherit;outline:none}ul{list-style:none}.hidden{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);transition:background .3s,color .3s;overflow-x:hidden;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+ul{list-style:none}
+.hidden{display:none!important}
 
 /* AUTH */
 #adminAuth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#060d2e,#0d1b5e,#1565c0,#2874f0);padding:20px;position:relative}
@@ -30,26 +38,29 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 .fg label{display:block;font-size:10.5px;font-weight:700;color:var(--t2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 .fc{width:100%;padding:10px 13px;border:1.5px solid var(--b);border-radius:var(--rd);font-size:13px;background:var(--c);color:var(--t);transition:var(--tr)}
 .fc:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(40,116,240,.1)}
-.fci{padding-left:40px}.fi{position:absolute;left:13px;bottom:11px;color:var(--m);font-size:14px;pointer-events:none}
+.fci{padding-left:40px}
+.fi{position:absolute;left:13px;bottom:11px;color:var(--m);font-size:14px;pointer-events:none}
 .pt{position:absolute;right:12px;bottom:11px;color:var(--m);cursor:pointer;font-size:14px}
 .btn{padding:11px 18px;border-radius:var(--rd);font-size:13px;font-weight:700;transition:var(--tr);display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+.btn:disabled {opacity: 0.7; cursor: not-allowed;}
 .btn-p{background:linear-gradient(135deg,#2874f0,#1565c0);color:#fff;box-shadow:0 4px 14px rgba(40,116,240,.35)}
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(40,116,240,.4)}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(40,116,240,.4)}
 .btn-d{background:linear-gradient(135deg,#e53935,#c62828);color:#fff}
 .btn-g{background:linear-gradient(135deg,#43a047,#2e7d32);color:#fff}
 .btn-w{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff}
 .btn-o{background:linear-gradient(135deg,#fb8c00,#e65100);color:#fff}
 .btn-pu{background:linear-gradient(135deg,#8e24aa,#6a1b9a);color:#fff}
-.btn-f{width:100%}.btn-sm{padding:7px 13px;font-size:12px}
+.btn-f{width:100%}
+.btn-sm{padding:7px 13px;font-size:12px}
 .errm{color:var(--r);font-size:11.5px;margin-top:6px;display:flex;align-items:center;gap:5px}
-.okm{color:var(--g);font-size:11.5px;margin-top:6px;display:flex;align-items:center;gap:5px}
-.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* LAYOUT */
 #adminApp{display:flex;min-height:100vh}
 #sidebar{width:var(--sb);background:linear-gradient(180deg,#060d2e 0%,#0d1b5e 40%,#1565c0 80%,#1e88e5 100%);position:fixed;top:0;left:0;bottom:0;z-index:500;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;transition:transform .3s ease}
-#sidebar::-webkit-scrollbar{width:4px}#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
+#sidebar::-webkit-scrollbar{width:4px}
+#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
 .sb-top{padding:18px 14px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sb-ico{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .sb-ico i{color:var(--p);font-size:19px}
@@ -94,7 +105,8 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 #cont{flex:1;padding:18px}
 
 /* VIEWS */
-.view{display:none}.view.show{display:block}
+.view{display:none}
+.view.show{display:block}
 
 /* STAT CARDS */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:18px}
@@ -108,17 +120,13 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 .sc-tr{font-size:10.5px;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:2px}
 .tup{color:var(--g)}.tdn{color:var(--r)}
 
-/* SECTION */
+/* GRID & CARDS */
 .sechd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .sechd h2{font-family:'Exo 2',sans-serif;font-size:15.5px;font-weight:800}
 .sechd-a{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-
-/* GRID */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-
-/* CARD */
 .card{background:var(--c);border-radius:var(--rd);box-shadow:var(--sh);overflow:hidden}
 .cp{padding:15px}
 
@@ -186,7 +194,16 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* RESPONSIVE */
-@media(max-width:768px){#sidebar{transform:translateX(-100%)}.sbshow{transform:translateX(0)!important}#admain{margin-left:0}.mbtn{display:flex}.g2,.g3{grid-template-columns:1fr}.sr{flex-direction:column}.src{min-width:0;width:100%}table{display:block;overflow-x:auto}}
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}
+  .sbshow{transform:translateX(0)!important}
+  #admain{margin-left:0}
+  .mbtn{display:flex}
+  .g2,.g3{grid-template-columns:1fr}
+  .sr{flex-direction:column}
+  .src{min-width:0;width:100%}
+  table{display:block;overflow-x:auto}
+}
 </style>
 </head>
 <body>
@@ -199,11 +216,33 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
       <h2>Admin Panel</h2>
       <p>Prince Enterprise Management System</p>
     </div>
-    <div class="fg"><label>Admin Email</label><i class="fi fas fa-envelope"></i><input class="fc fci" type="email" id="aEmail" placeholder="admin@princeenterprise.com"></div>
-    <div class="fg"><label>Password</label><i class="fi fas fa-lock"></i><input class="fc fci" type="password" id="aPass" placeholder="Admin password"><span class="pt" onclick="togglePw()"><i class="fas fa-eye" id="pwIco"></i></span></div>
-    <button class="btn btn-p btn-f" onclick="adminLogin()" id="aBtn"><span>Login to Dashboard</span></button>
-    <p id="aErr" class="errm hidden"><i class="fas fa-circle-exclamation"></i><span></span></p>
-    <p style="font-size:11px;color:var(--m);text-align:center;margin-top:12px;line-height:1.5">🔒 Restricted access — authorized administrators only.<br>New to admin? Contact the system owner.</p>
+    
+    <div class="fg">
+      <label>Admin Email</label>
+      <i class="fi fas fa-envelope"></i>
+      <input class="fc fci" type="email" id="aEmail" placeholder="admin@princeenterprise.com">
+    </div>
+    
+    <div class="fg">
+      <label>Password</label>
+      <i class="fi fas fa-lock"></i>
+      <input class="fc fci" type="password" id="aPass" placeholder="Admin password">
+      <span class="pt" onclick="togglePw()"><i class="fas fa-eye" id="pwIco"></i></span>
+    </div>
+    
+    <button class="btn btn-p btn-f" onclick="adminLogin()" id="aBtn">
+      <span id="aBtnText">Login to Dashboard</span>
+      <div class="spin hidden" id="aBtnSpin" style="margin-left: 8px;"></div>
+    </button>
+    
+    <p id="aErr" class="errm hidden">
+      <i class="fas fa-circle-exclamation"></i>
+      <span></span>
+    </p>
+    
+    <p style="font-size:11px;color:var(--m);text-align:center;margin-top:12px;line-height:1.5">
+      🔒 Restricted access — authorized administrators only.<br>New to admin? Contact the system owner.
+    </p>
   </div>
 </div>
 
@@ -279,7 +318,6 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
     </header>
 
     <div id="cont">
-
       <!-- DASHBOARD -->
       <div id="vDashboard" class="view show">
         <div class="stats" id="statGrid"></div>
@@ -523,129 +561,236 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 
 <div id="toast"></div>
 
+<!-- MAIN SCRIPT -->
 <script>
-// ── Firebase ────────────────────────────────────────────────
-const fbCfg={apiKey:"AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",authDomain:"honest-talk-5b839.firebaseapp.com",databaseURL:"https://honest-talk-5b839-default-rtdb.firebaseio.com",projectId:"honest-talk-5b839",storageBucket:"honest-talk-5b839.firebasestorage.app",messagingSenderId:"479110931464",appId:"1:479110931464:web:37bc3a606b8160bae9ddbd"};
+// ── Firebase Config (Cleaned format) ──────────────────────────────────
+const fbCfg = {
+  apiKey: "AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",
+  authDomain: "honest-talk-5b839.firebaseapp.com",
+  databaseURL: "https://honest-talk-5b839-default-rtdb.firebaseio.com",
+  projectId: "honest-talk-5b839",
+  storageBucket: "honest-talk-5b839.firebasestorage.app",
+  messagingSenderId: "479110931464",
+  appId: "1:479110931464:web:37bc3a606b8160bae9ddbd"
+};
+
 firebase.initializeApp(fbCfg);
-const auth=firebase.auth(), db=firebase.database();
+const auth = firebase.auth();
+const db = firebase.database();
 
-// ── State ───────────────────────────────────────────────────
-let adminUser=null, allOrders=[], allProds=[], allCusts=[], allCoupons=[], appCfg={}, isDark=false;
+// ── State Variables ───────────────────────────────────────────────────
+let adminUser = null;
+let allOrders = [];
+let allProds = [];
+let allCusts = [];
+let allCoupons = [];
+let appCfg = {};
+let isDark = false;
 
-// ── Auth ────────────────────────────────────────────────────
-function togglePw(){const i=document.getElementById('aPass');const show=i.type==='password';i.type=show?'text':'password';document.getElementById('pwIco').className='fas fa-eye'+(show?'-slash':'');}
+const waTemplatesList = [
+  {icon:'📦', name:'Order Confirmed', msg:`Hi {name}! Your order #{orderId} has been confirmed at Prince Enterprise. We'll dispatch it soon. Thank you! 💡`},
+  {icon:'🚚', name:'Order Shipped', msg:`Hi {name}! Your order #{orderId} has been shipped and is on its way. Expected delivery in 2-3 days. 🚚`},
+  {icon:'✅', name:'Order Delivered', msg:`Hi {name}! Your order has been delivered. Hope you love your new LED products! Rate us at princeenterprise.com ⭐`},
+  {icon:'🎁', name:'Promotional Offer', msg:`Hi {name}! Prince Enterprise FLASH SALE 🔥 Up to 60% OFF on LED lights! Shop now. Use code PRINCE10 for extra 10% off.`},
+  {icon:'⭐', name:'Review Request', msg:`Hi {name}! How are you enjoying your LED products from Prince Enterprise? Leave us a review and get 5% off your next order! 🌟`}
+];
 
-async function adminLogin(){
-  const email=document.getElementById('aEmail').value.trim();
-  const pass=document.getElementById('aPass').value;
-  const errEl=document.getElementById('aErr');
+// ── Auth ─────────────────────────────────────────────────────────────
+function togglePw() {
+  const i = document.getElementById('aPass');
+  const show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  document.getElementById('pwIco').className = 'fas fa-eye' + (show ? '-slash' : '');
+}
+
+async function adminLogin() {
+  const email = document.getElementById('aEmail').value.trim();
+  const pass = document.getElementById('aPass').value;
+  const errEl = document.getElementById('aErr');
+  const btn = document.getElementById('aBtn');
+  const btnText = document.getElementById('aBtnText');
+  const btnSpin = document.getElementById('aBtnSpin');
+  
   errEl.classList.add('hidden');
-  if(!email||!pass){showErr('Fill in all fields.');return;}
-  const btn=document.getElementById('aBtn');
-  btn.innerHTML='<div class="spin"></div>';
-  try{
-    const cred=await auth.signInWithEmailAndPassword(email,pass);
-    const roleSnap=await db.ref('users/'+cred.user.uid+'/role').get();
-    if(roleSnap.val()!=='admin'){
+  
+  if (!email || !pass) {
+    showErr('Fill in all fields.');
+    return;
+  }
+  
+  // Show loading animation
+  btn.disabled = true;
+  btnText.textContent = 'Logging in...';
+  btnSpin.classList.remove('hidden');
+
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    const roleSnap = await db.ref('users/' + cred.user.uid + '/role').get();
+    
+    if (roleSnap.val() !== 'admin') {
       await auth.signOut();
       showErr('Access denied. Admin accounts only.');
-      btn.innerHTML='<span>Login to Dashboard</span>';
+      resetBtn();
     }
-  }catch(e){
-    showErr(e.message.replace('Firebase:','').replace(/\(.*?\)/,'').trim());
-    btn.innerHTML='<span>Login to Dashboard</span>';
+    // Note: If successful, the onAuthStateChanged listener will handle the UI transition.
+  } catch(e) {
+    let errMsg = e.message.replace('Firebase:', '').replace(/\(.*?\)/, '').trim();
+    showErr(errMsg);
+    resetBtn();
+  }
+
+  function resetBtn() {
+    btn.disabled = false;
+    btnText.textContent = 'Login to Dashboard';
+    btnSpin.classList.add('hidden');
   }
 }
 
-function showErr(m){const e=document.getElementById('aErr');e.classList.remove('hidden');e.querySelector('span').textContent=m;}
+function showErr(m) {
+  const e = document.getElementById('aErr');
+  e.classList.remove('hidden');
+  e.querySelector('span').textContent = m;
+}
 
-auth.onAuthStateChanged(async u=>{
-  if(u){
-    const s=await db.ref('users/'+u.uid+'/role').get();
-    if(s.val()==='admin'){
-      adminUser=u;
+auth.onAuthStateChanged(async u => {
+  if (u) {
+    const s = await db.ref('users/' + u.uid + '/role').get();
+    if (s.val() === 'admin') {
+      adminUser = u;
       document.getElementById('adminAuth').classList.add('hidden');
       document.getElementById('adminApp').classList.remove('hidden');
-      document.getElementById('sbAv').textContent=(u.displayName||u.email||'A')[0].toUpperCase();
-      document.getElementById('sbName').textContent=u.displayName||u.email;
+      document.getElementById('sbAv').textContent = (u.displayName || u.email || 'A')[0].toUpperCase();
+      document.getElementById('sbName').textContent = u.displayName || u.email;
       initDarkMode();
       loadAll();
+    } else {
+      // Not admin, keep logged out
+      await auth.signOut();
     }
   }
 });
 
-async function adminLogout(){await auth.signOut();location.reload();}
+async function adminLogout() {
+  await auth.signOut();
+  location.reload();
+}
 
-// ── Load Data ────────────────────────────────────────────────
-async function loadAll(){
+// ── Load Data ─────────────────────────────────────────────────────────
+async function loadAll() {
   // Settings
-  const cs=await db.ref('appSettings').get();
-  appCfg=cs.val()||{upiId:'princeenterprise@upi',storeName:'Prince Enterprise',storePhone:'+919876543210',freeDeliveryThreshold:500,deliveryCharge:50};
+  const cs = await db.ref('appSettings').get();
+  appCfg = cs.val() || {
+    upiId: 'princeenterprise@upi',
+    storeName: 'Prince Enterprise',
+    storePhone: '+919876543210',
+    freeDeliveryThreshold: 500,
+    deliveryCharge: 50
+  };
   loadSettingsUI();
 
   // Products
-  const ps=await db.ref('products').get();
-  allProds=ps.val()?Object.entries(ps.val()).map(([id,p])=>({id,...p})):defaultProds();
-  if(!ps.val()) allProds.forEach(p=>db.ref('products/'+p.id).set(p));
+  const ps = await db.ref('products').get();
+  allProds = ps.val() ? Object.entries(ps.val()).map(([id, p]) => ({id, ...p})) : defaultProds();
+  if (!ps.val()) allProds.forEach(p => db.ref('products/' + p.id).set(p));
 
   // Customers
-  const us=await db.ref('users').get();
-  allCusts=us.val()?Object.entries(us.val()).map(([id,u])=>({id,...u})).filter(u=>u.role!=='admin'):[];
+  const us = await db.ref('users').get();
+  allCusts = us.val() ? Object.entries(us.val()).map(([id, u]) => ({id, ...u})).filter(u => u.role !== 'admin') : [];
 
   // Coupons
-  const couS=await db.ref('coupons').get();
-  allCoupons=couS.val()?Object.entries(couS.val()).map(([id,c])=>({id,...c})):[
-    {id:'c1',code:'PRINCE10',discount:10,type:'percent',desc:'10% off all products',active:true,uses:45},
-    {id:'c2',code:'LED20',discount:20,type:'percent',desc:'20% off LED strips',active:true,uses:12},
-    {id:'c3',code:'FLAT50',discount:50,type:'flat',desc:'₹50 off orders ₹500+',active:false,uses:7},
-    {id:'c4',code:'BULK15',discount:15,type:'percent',desc:'15% off bulk orders',active:true,uses:3},
+  const couS = await db.ref('coupons').get();
+  allCoupons = couS.val() ? Object.entries(couS.val()).map(([id, c]) => ({id, ...c})) : [
+    {id:'c1', code:'PRINCE10', discount:10, type:'percent', desc:'10% off all products', active:true, uses:45},
+    {id:'c2', code:'LED20', discount:20, type:'percent', desc:'20% off LED strips', active:true, uses:12},
+    {id:'c3', code:'FLAT50', discount:50, type:'flat', desc:'₹50 off orders ₹500+', active:false, uses:7},
+    {id:'c4', code:'BULK15', discount:15, type:'percent', desc:'15% off bulk orders', active:true, uses:3},
   ];
 
   // Orders - live listener
-  db.ref('orders').on('value',snap=>{
-    allOrders=snap.val()?Object.entries(snap.val()).map(([id,o])=>({id,...o})).sort((a,b)=>b.createdAt-a.createdAt):[];
-    const newCount=allOrders.filter(o=>o.status==='Confirmed').length;
-    ['nbOrders','hdrBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=newCount;});
+  db.ref('orders').on('value', snap => {
+    allOrders = snap.val() ? Object.entries(snap.val()).map(([id, o]) => ({id, ...o})).sort((a, b) => b.createdAt - a.createdAt) : [];
+    const newCount = allOrders.filter(o => o.status === 'Confirmed').length;
+    
+    ['nbOrders', 'hdrBadge'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = newCount;
+    });
+    
     renderDashboard();
-    if(document.getElementById('vOrders').classList.contains('show'))renderOrders();
-    if(document.getElementById('vPayments').classList.contains('show'))renderPayments();
-    if(document.getElementById('vTracking').classList.contains('show'))renderTracking();
+    if (document.getElementById('vOrders').classList.contains('show')) renderOrders();
+    if (document.getElementById('vPayments').classList.contains('show')) renderPayments();
+    if (document.getElementById('vTracking').classList.contains('show')) renderTracking();
   });
 
   renderAll();
 }
 
-function defaultProds(){
-  return[{id:'p1',name:'Prince 9W LED Bulb Warm White',category:'Bulbs',price:79,originalPrice:149,discount:47,rating:4.5,reviews:128,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:50,isNew:true,isBestSeller:true},{id:'p2',name:'RGB LED Strip 5M with Remote',category:'Strip Lights',price:399,originalPrice:799,discount:50,rating:4.3,reviews:89,image:'https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=200',stock:30,isFlashDeal:true},{id:'p3',name:'Prince LED Panel Light 12W',category:'Panel Lights',price:299,originalPrice:550,discount:46,rating:4.6,reviews:214,image:'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=200',stock:45,isBestSeller:true},{id:'p4',name:'LED Street Light 30W Outdoor',category:'Outdoor',price:899,originalPrice:1599,discount:44,rating:4.4,reviews:67,image:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=200',stock:20},{id:'p5',name:'Smart WiFi LED Bulb 9W RGB',category:'Smart Lights',price:549,originalPrice:999,discount:45,rating:4.7,reviews:156,image:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=200',stock:35,isNew:true},{id:'p6',name:'LED Tube Light 18W 4ft',category:'Tube Lights',price:199,originalPrice:350,discount:43,rating:4.2,reviews:98,image:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200',stock:60},{id:'p7',name:'LED Downlight 7W Recessed',category:'Downlights',price:149,originalPrice:280,discount:47,rating:4.4,reviews:175,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:80},{id:'p8',name:'Solar LED Garden Light',category:'Outdoor',price:499,originalPrice:899,discount:44,rating:4.1,reviews:44,image:'https://images.unsplash.com/photo-1621600411688-4be93cd68504?w=200',stock:25}];
+function defaultProds() {
+  return [
+    {id:'p1', name:'Prince 9W LED Bulb Warm White', category:'Bulbs', price:79, originalPrice:149, discount:47, rating:4.5, reviews:128, image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200', stock:50, isNew:true, isBestSeller:true},
+    {id:'p2', name:'RGB LED Strip 5M with Remote', category:'Strip Lights', price:399, originalPrice:799, discount:50, rating:4.3, reviews:89, image:'https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=200', stock:30, isFlashDeal:true},
+    {id:'p3', name:'Prince LED Panel Light 12W', category:'Panel Lights', price:299, originalPrice:550, discount:46, rating:4.6, reviews:214, image:'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=200', stock:45, isBestSeller:true},
+    {id:'p4', name:'LED Street Light 30W Outdoor', category:'Outdoor', price:899, originalPrice:1599, discount:44, rating:4.4, reviews:67, image:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=200', stock:20},
+    {id:'p5', name:'Smart WiFi LED Bulb 9W RGB', category:'Smart Lights', price:549, originalPrice:999, discount:45, rating:4.7, reviews:156, image:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=200', stock:35, isNew:true},
+    {id:'p6', name:'LED Tube Light 18W 4ft', category:'Tube Lights', price:199, originalPrice:350, discount:43, rating:4.2, reviews:98, image:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200', stock:60},
+    {id:'p7', name:'LED Downlight 7W Recessed', category:'Downlights', price:149, originalPrice:280, discount:47, rating:4.4, reviews:175, image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200', stock:80},
+    {id:'p8', name:'Solar LED Garden Light', category:'Outdoor', price:499, originalPrice:899, discount:44, rating:4.1, reviews:44, image:'https://images.unsplash.com/photo-1621600411688-4be93cd68504?w=200', stock:25}
+  ];
 }
 
-function renderAll(){renderDashboard();renderProducts();renderCustomers();renderCoupons();renderCategories();renderBanners();renderReviews();renderInventory();renderWATemplates();renderWACustomers();}
-
-// ── Nav ──────────────────────────────────────────────────────
-const viewTitles={dashboard:'Dashboard',orders:'All Orders',tracking:'Order Tracking',products:'Products',categories:'Categories',inventory:'Inventory',customers:'Customers',coupons:'Coupons & Discounts',notifications:'Push Notifications',whatsapp:'WhatsApp Messaging',banners:'Banners',payments:'Payments',reports:'Reports & Analytics',reviews:'Customer Reviews',settings:'App Settings'};
-
-function nav(pg){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));
-  document.querySelectorAll('.smi').forEach(s=>s.classList.remove('on'));
-  const v=document.getElementById('v'+pg.charAt(0).toUpperCase()+pg.slice(1));
-  if(v)v.classList.add('show');
-  const s=document.getElementById('smi-'+pg);if(s)s.classList.add('on');
-  document.getElementById('hdrTitle').textContent=viewTitles[pg]||pg;
-  if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('sbshow');
-  if(pg==='payments')renderPayments();
-  if(pg==='reports')renderReports();
-  if(pg==='tracking')renderTracking();
+function renderAll() {
+  renderDashboard();
+  renderProducts();
+  renderCustomers();
+  renderCoupons();
+  renderCategories();
+  renderBanners();
+  renderReviews();
+  renderInventory();
+  renderWATemplates();
+  renderWACustomers();
 }
 
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('sbshow');}
+// ── Nav ───────────────────────────────────────────────────────────────
+const viewTitles = {
+  dashboard:'Dashboard', orders:'All Orders', tracking:'Order Tracking',
+  products:'Products', categories:'Categories', inventory:'Inventory',
+  customers:'Customers', coupons:'Coupons & Discounts', notifications:'Push Notifications',
+  whatsapp:'WhatsApp Messaging', banners:'Banners', payments:'Payments',
+  reports:'Reports & Analytics', reviews:'Customer Reviews', settings:'App Settings'
+};
 
-// ── Dashboard ────────────────────────────────────────────────
-function renderDashboard(){
-  const tot=allOrders.length, rev=allOrders.reduce((s,o)=>s+(o.total||0),0);
-  const del=allOrders.filter(o=>o.status==='Delivered').length;
-  const nw=allOrders.filter(o=>o.status==='Confirmed').length;
-  const upiRev=allOrders.filter(o=>o.paymentMethod==='UPI').reduce((s,o)=>s+(o.total||0),0);
-  document.getElementById('statGrid').innerHTML=`
+function nav(pg) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+  document.querySelectorAll('.smi').forEach(s => s.classList.remove('on'));
+  
+  const v = document.getElementById('v' + pg.charAt(0).toUpperCase() + pg.slice(1));
+  if(v) v.classList.add('show');
+  
+  const s = document.getElementById('smi-' + pg);
+  if(s) s.classList.add('on');
+  
+  document.getElementById('hdrTitle').textContent = viewTitles[pg] || pg;
+  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('sbshow');
+  
+  if(pg === 'payments') renderPayments();
+  if(pg === 'reports') renderReports();
+  if(pg === 'tracking') renderTracking();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('sbshow');
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────
+function renderDashboard() {
+  const tot = allOrders.length;
+  const rev = allOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const del = allOrders.filter(o => o.status === 'Delivered').length;
+  const nw = allOrders.filter(o => o.status === 'Confirmed').length;
+  const upiRev = allOrders.filter(o => o.paymentMethod === 'UPI').reduce((s, o) => s + (o.total || 0), 0);
+  
+  document.getElementById('statGrid').innerHTML = `
     <div class="scard sc-b" onclick="nav('orders')"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-box"></i></div><div class="sc-val">${tot}</div><div class="sc-lbl">Total Orders</div><div class="sc-tr tup"><i class="fas fa-arrow-up"></i> ${nw} new</div></div>
     <div class="scard sc-g" onclick="nav('payments')"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${rev.toLocaleString('en-IN')}</div><div class="sc-lbl">Revenue</div></div>
     <div class="scard sc-o" onclick="nav('customers')"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-users"></i></div><div class="sc-val">${allCusts.length}</div><div class="sc-lbl">Customers</div></div>
@@ -653,137 +798,171 @@ function renderDashboard(){
     <div class="scard sc-r"><div class="sc-ico" style="background:var(--r)"><i class="fas fa-clock"></i></div><div class="sc-val">${nw}</div><div class="sc-lbl">Pending Orders</div></div>
     <div class="scard sc-t" onclick="nav('payments')"><div class="sc-ico" style="background:#00796b"><i class="fas fa-check-circle"></i></div><div class="sc-val">${del}</div><div class="sc-lbl">Delivered</div></div>
   `;
+  
   // Chart
-  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const vals=days.map(()=>Math.floor(800+Math.random()*3200));
-  const mx=Math.max(...vals);
-  document.getElementById('revenueChart').innerHTML=vals.map((v,i)=>`<div class="mb" style="height:${Math.round(v/mx*100)}%;background:linear-gradient(to top,var(--p),var(--pl))" title="${days[i]}: ₹${v}"></div>`).join('');
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const vals = days.map(() => Math.floor(800 + Math.random() * 3200));
+  const mx = Math.max(...vals);
+  document.getElementById('revenueChart').innerHTML = vals.map((v, i) => `<div class="mb" style="height:${Math.round(v / mx * 100)}%;background:linear-gradient(to top,var(--p),var(--pl))" title="${days[i]}: ₹${v}"></div>`).join('');
+  
   // Status split
-  const statuses=['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'];
-  const colors={Confirmed:'p-b',Processing:'p-o',Shipped:'p-pu','Out for Delivery':'p-o',Delivered:'p-g',Cancelled:'p-r'};
-  document.getElementById('statusSplit').innerHTML=statuses.map(s=>{const c=allOrders.filter(o=>o.status===s).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--d)"><span>${s}</span><span class="pill ${colors[s]}">${c}</span></div>`;}).join('');
+  const statuses = ['Confirmed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+  const colors = {Confirmed:'p-b', Processing:'p-o', Shipped:'p-pu', 'Out for Delivery':'p-o', Delivered:'p-g', Cancelled:'p-r'};
+  document.getElementById('statusSplit').innerHTML = statuses.map(s => {
+    const c = allOrders.filter(o => o.status === s).length;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--d)"><span>${s}</span><span class="pill ${colors[s]}">${c}</span></div>`;
+  }).join('');
+  
   // Recent orders table
-  renderOrdersTable('recentBody',allOrders.slice(0,8));
+  renderOrdersTable('recentBody', allOrders.slice(0, 8));
 }
 
-// ── Orders ───────────────────────────────────────────────────
-const stPill={Confirmed:'p-b',Processing:'p-o',Shipped:'p-pu','Out for Delivery':'p-o',Delivered:'p-g',Cancelled:'p-r'};
+// ── Orders ────────────────────────────────────────────────────────────
+const stPill = {Confirmed:'p-b', Processing:'p-o', Shipped:'p-pu', 'Out for Delivery':'p-o', Delivered:'p-g', Cancelled:'p-r'};
 
-function renderOrders(){
-  const q=(document.getElementById('ordQ')||{}).value||'';
-  const sf=(document.getElementById('ordSt')||{}).value||'';
-  const list=allOrders.filter(o=>{
-    const m=!q||(o.orderId||'').toLowerCase().includes(q.toLowerCase())||(o.userEmail||'').toLowerCase().includes(q.toLowerCase());
-    return m&&(!sf||o.status===sf);
+function renderOrders() {
+  const q = (document.getElementById('ordQ') || {}).value || '';
+  const sf = (document.getElementById('ordSt') || {}).value || '';
+  
+  const list = allOrders.filter(o => {
+    const m = !q || (o.orderId || '').toLowerCase().includes(q.toLowerCase()) || (o.userEmail || '').toLowerCase().includes(q.toLowerCase());
+    return m && (!sf || o.status === sf);
   });
-  renderOrdersTable('ordersBody',list);
+  renderOrdersTable('ordersBody', list);
 }
 
-function renderOrdersTable(tbId,list){
-  const el=document.getElementById(tbId);if(!el)return;
-  el.innerHTML=list.map(o=>`<tr>
-    <td><strong style="font-family:'Exo 2',sans-serif;font-size:11px">${o.orderId||o.id}</strong></td>
-    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.userEmail||'—'}</td>
-    <td>${(o.items||[]).length}</td>
-    <td><strong>₹${o.total||0}</strong></td>
-    <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
-    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+function renderOrdersTable(tbId, list) {
+  const el = document.getElementById(tbId);
+  if (!el) return;
+  
+  el.innerHTML = list.map(o => `<tr>
+    <td><strong style="font-family:'Exo 2',sans-serif;font-size:11px">${o.orderId || o.id}</strong></td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.userEmail || '—'}</td>
+    <td>${(o.items || []).length}</td>
+    <td><strong>₹${o.total || 0}</strong></td>
+    <td><span class="pill ${o.paymentMethod === 'UPI' ? 'p-b' : 'p-g'}">${o.paymentMethod || 'COD'}</span></td>
+    <td style="font-size:11px">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+    <td><span class="pill ${stPill[o.status] || 'p-gr'}">${o.status || '—'}</span></td>
     <td><div class="tda">
-      <div class="ab ab-b" onclick="viewOrder('${o.orderId||o.id}')" title="View"><i class="fas fa-eye"></i></div>
-      <select style="padding:4px 6px;border:1.5px solid var(--b);border-radius:6px;font-size:11px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value)">
-        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+      <div class="ab ab-b" onclick="viewOrder('${o.orderId || o.id}')" title="View"><i class="fas fa-eye"></i></div>
+      <select style="padding:4px 6px;border:1.5px solid var(--b);border-radius:6px;font-size:11px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId || o.id}', this.value)">
+        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s => `<option${o.status === s ? ' selected' : ''}>${s}</option>`).join('')}
       </select>
-      <div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+      <div class="ab ab-wa" onclick="waOrder('${o.userEmail || ''}', '${o.orderId || o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
     </div></td>
-  </tr>`).join('')||`<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
+  </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
 }
 
-async function updateStatus(ordId,status){
-  await db.ref('orders/'+ordId+'/status').set(status);
-  showToast('Order '+ordId+' → '+status);
+async function updateStatus(ordId, status) {
+  await db.ref('orders/' + ordId + '/status').set(status);
+  showToast('Order ' + ordId + ' → ' + status);
 }
 
-function viewOrder(ordId){
-  const o=allOrders.find(x=>x.id===ordId||x.orderId===ordId);if(!o)return;
-  openModal('Order — '+o.orderId,`
+function viewOrder(ordId) {
+  const o = allOrders.find(x => x.id === ordId || x.orderId === ordId);
+  if (!o) return;
+  
+  openModal('Order — ' + o.orderId, `
     <div style="font-size:13px">
-      ${[['Order ID',o.orderId],['Customer',o.userEmail||'—'],['Total','₹'+(o.total||0)],['Payment',o.paymentMethod||'—'],['Date',o.createdAt?new Date(o.createdAt).toLocaleString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
-      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">Status</span><span class="pill ${stPill[o.status]||'p-gr'}">${o.status}</span></div>
-      <div style="margin:10px 0 6px;font-weight:800;font-size:12px">Items (${(o.items||[]).length})</div>
-      ${(o.items||[]).map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--d)"><img src="${i.image}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700;font-size:12.5px">${i.name}</div><div style="color:var(--m);font-size:11.5px">₹${i.price} × ${i.qty||1}</div></div></div>`).join('')}
+      ${[['Order ID', o.orderId], ['Customer', o.userEmail || '—'], ['Total', '₹' + (o.total || 0)], ['Payment', o.paymentMethod || '—'], ['Date', o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : '—']].map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">Status</span><span class="pill ${stPill[o.status] || 'p-gr'}">${o.status}</span></div>
+      <div style="margin:10px 0 6px;font-weight:800;font-size:12px">Items (${(o.items || []).length})</div>
+      ${(o.items || []).map(i => `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--d)"><img src="${i.image}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700;font-size:12.5px">${i.name}</div><div style="color:var(--m);font-size:11.5px">₹${i.price} × ${i.qty || 1}</div></div></div>`).join('')}
     </div>
-  `,`<button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail||''}','${o.orderId}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
+  `, `<button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail || ''}', '${o.orderId}'); closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
 }
 
-function waOrder(email,ordId){window.open(`https://wa.me/?text=${encodeURIComponent(`Hi! Your Prince Enterprise order ${ordId} has been updated. For more info visit our store or reply here. Thank you! 💡`)}`, '_blank');}
+function waOrder(email, ordId) {
+  const msg = encodeURIComponent(`Hi! Your Prince Enterprise order ${ordId} has been updated. For more info visit our store or reply here. Thank you! 💡`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+}
 
-// ── Tracking ─────────────────────────────────────────────────
-function renderTracking(){
-  const el=document.getElementById('trackBody');if(!el)return;
-  el.innerHTML=allOrders.slice(0,20).map(o=>`<tr>
-    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
-    <td><select style="padding:5px 8px;border:1.5px solid var(--b);border-radius:6px;font-size:11.5px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value);searchTrack()">
-      ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+// ── Tracking ──────────────────────────────────────────────────────────
+function renderTracking() {
+  const el = document.getElementById('trackBody');
+  if (!el) return;
+  
+  el.innerHTML = allOrders.slice(0, 20).map(o => `<tr>
+    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId || o.id}</strong></td>
+    <td style="font-size:12px">${o.userEmail || '—'}</td>
+    <td><span class="pill ${stPill[o.status] || 'p-gr'}">${o.status || '—'}</span></td>
+    <td><select style="padding:5px 8px;border:1.5px solid var(--b);border-radius:6px;font-size:11.5px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId || o.id}', this.value); searchTrack()">
+      ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s => `<option${o.status === s ? ' selected' : ''}>${s}</option>`).join('')}
     </select></td>
-    <td><div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
-  </tr>`).join('')||`<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
+    <td><div class="ab ab-wa" onclick="waOrder('${o.userEmail || ''}', '${o.orderId || o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
+  </tr>`).join('') || `<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No orders</td></tr>`;
 }
 
-function searchTrack(){
-  const q=document.getElementById('trackQ').value.trim().toLowerCase();
-  const el=document.getElementById('trackRes');
-  if(!q){el.innerHTML='';return;}
-  const matches=allOrders.filter(o=>(o.orderId||o.id||'').toLowerCase().includes(q)||(o.userEmail||'').toLowerCase().includes(q));
-  if(!matches.length){el.innerHTML=`<div class="card cp" style="text-align:center;color:var(--m);margin-bottom:13px"><i class="fas fa-search" style="font-size:28px;opacity:.3;margin-bottom:8px;display:block"></i>No orders matching "${q}"</div>`;return;}
-  el.innerHTML=matches.slice(0,3).map(o=>{
-    const steps=o.tracking||[{status:'Order Placed',done:true},{status:'Processing',done:false},{status:'Shipped',done:false},{status:'Out for Delivery',done:false},{status:'Delivered',done:false}];
-    return`<div class="card cp" style="margin-bottom:13px">
+function searchTrack() {
+  const q = document.getElementById('trackQ').value.trim().toLowerCase();
+  const el = document.getElementById('trackRes');
+  
+  if (!q) {
+    el.innerHTML = '';
+    return;
+  }
+  
+  const matches = allOrders.filter(o => (o.orderId || o.id || '').toLowerCase().includes(q) || (o.userEmail || '').toLowerCase().includes(q));
+  
+  if (!matches.length) {
+    el.innerHTML = `<div class="card cp" style="text-align:center;color:var(--m);margin-bottom:13px"><i class="fas fa-search" style="font-size:28px;opacity:.3;margin-bottom:8px;display:block"></i>No orders matching "${q}"</div>`;
+    return;
+  }
+  
+  el.innerHTML = matches.slice(0, 3).map(o => {
+    const steps = o.tracking || [
+      {status:'Order Placed', done:true},
+      {status:'Processing', done:false},
+      {status:'Shipped', done:false},
+      {status:'Out for Delivery', done:false},
+      {status:'Delivered', done:false}
+    ];
+    return `<div class="card cp" style="margin-bottom:13px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div><strong style="font-family:'Exo 2',sans-serif">${o.orderId}</strong> · <span style="font-size:12px;color:var(--m)">${o.userEmail}</span></div>
-        <span class="pill ${stPill[o.status]||'p-gr'}">${o.status}</span>
+        <span class="pill ${stPill[o.status] || 'p-gr'}">${o.status}</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-        ${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:${s.done?'#e8f5e9':'var(--bg)'};border:1.5px solid ${s.done?'var(--g)':'var(--b)'};font-size:12px;font-weight:700;color:${s.done?'var(--g)':'var(--m)'}">
-          <i class="fas fa-${s.done?'check-circle':'circle'}" style="font-size:13px"></i>${s.status}
-          <div class="ab ab-g" onclick="markStep('${o.orderId||o.id}',${i})" title="Mark done" style="width:22px;height:22px;font-size:10px"><i class="fas fa-check"></i></div>
+        ${steps.map((s, i) => `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:${s.done ? '#e8f5e9' : 'var(--bg)'};border:1.5px solid ${s.done ? 'var(--g)' : 'var(--b)'};font-size:12px;font-weight:700;color:${s.done ? 'var(--g)' : 'var(--m)'}">
+          <i class="fas fa-${s.done ? 'check-circle' : 'circle'}" style="font-size:13px"></i>${s.status}
+          <div class="ab ab-g" onclick="markStep('${o.orderId || o.id}', ${i})" title="Mark done" style="width:22px;height:22px;font-size:10px"><i class="fas fa-check"></i></div>
         </div>`).join('')}
       </div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
-        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered'].map(s=>`<button class="btn btn-sm" style="${o.status===s?'background:var(--p);color:#fff':'background:var(--bg);color:var(--t2);border:1.5px solid var(--b)'}" onclick="updateStatus('${o.orderId||o.id}','${s}');setTimeout(searchTrack,400)">${s}</button>`).join('')}
-        <button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail||''}','${o.orderId}')"><i class="fab fa-whatsapp"></i></button>
+        ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered'].map(s => `<button class="btn btn-sm" style="${o.status === s ? 'background:var(--p);color:#fff' : 'background:var(--bg);color:var(--t2);border:1.5px solid var(--b)'}" onclick="updateStatus('${o.orderId || o.id}', '${s}'); setTimeout(searchTrack, 400)">${s}</button>`).join('')}
+        <button class="btn btn-w btn-sm" onclick="waOrder('${o.userEmail || ''}', '${o.orderId}')"><i class="fab fa-whatsapp"></i></button>
       </div>
     </div>`;
   }).join('');
 }
 
-async function markStep(ordId,idx){
-  await db.ref('orders/'+ordId+'/tracking/'+idx).update({done:true,time:Date.now()});
-  showToast('Step marked done');setTimeout(searchTrack,400);
+async function markStep(ordId, idx) {
+  await db.ref('orders/' + ordId + '/tracking/' + idx).update({done: true, time: Date.now()});
+  showToast('Step marked done');
+  setTimeout(searchTrack, 400);
 }
 
-// ── Products ─────────────────────────────────────────────────
-function renderProducts(){
-  const q=(document.getElementById('prodQ')||{}).value||'';
-  const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));
-  document.getElementById('prodsBody').innerHTML=list.map(p=>`<tr>
+// ── Products ──────────────────────────────────────────────────────────
+function renderProducts() {
+  const q = (document.getElementById('prodQ') || {}).value || '';
+  const list = allProds.filter(p => !q || p.name.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase()));
+  
+  document.getElementById('prodsBody').innerHTML = list.map(p => `<tr>
     <td><img class="td-img" src="${p.image}" onerror="this.src='https://via.placeholder.com/40x40/f0f0f0/888?text=P'"></td>
     <td style="max-width:200px"><strong style="font-size:12.5px">${p.name}</strong></td>
-    <td>${p.category||'—'}</td>
-    <td><strong>₹${p.price}</strong>${p.originalPrice?` <span style="font-size:10px;color:var(--m);text-decoration:line-through">₹${p.originalPrice}</span>`:''}</td>
-    <td><span style="font-weight:700;color:${(p.stock||0)<=5?'var(--r)':'var(--g)'}">${p.stock||0}</span></td>
-    <td style="font-size:11px">${[p.isNew&&'New',p.isBestSeller&&'Best',p.isFlashDeal&&'Flash'].filter(Boolean).map(f=>`<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('')||'—'}</td>
+    <td>${p.category || '—'}</td>
+    <td><strong>₹${p.price}</strong>${p.originalPrice ? ` <span style="font-size:10px;color:var(--m);text-decoration:line-through">₹${p.originalPrice}</span>` : ''}</td>
+    <td><span style="font-weight:700;color:${(p.stock || 0) <= 5 ? 'var(--r)' : 'var(--g)'}">${p.stock || 0}</span></td>
+    <td style="font-size:11px">${[p.isNew && 'New', p.isBestSeller && 'Best', p.isFlashDeal && 'Flash'].filter(Boolean).map(f => `<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('') || '—'}</td>
     <td><div class="tda">
       <div class="ab ab-b" onclick="editProd('${p.id}')" title="Edit"><i class="fas fa-edit"></i></div>
       <div class="ab ab-r" onclick="delProd('${p.id}')" title="Delete"><i class="fas fa-trash"></i></div>
     </div></td>
-  </tr>`).join('')||`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
+  </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
 }
 
-function openAddProduct(){
-  openModal('Add New Product',`
+function openAddProduct() {
+  openModal('Add New Product', `
     <div class="fg"><label>Product Name*</label><input class="fc" id="pn" placeholder="e.g. 9W LED Bulb"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label>Category</label><select class="fc" id="pc"><option>Bulbs</option><option>Strip Lights</option><option>Panel Lights</option><option>Outdoor</option><option>Smart Lights</option><option>Tube Lights</option><option>Downlights</option><option>Decorative</option></select></div>
@@ -808,175 +987,277 @@ function openAddProduct(){
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pbest" style="accent-color:var(--p)"> Best Seller</label>
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pflash" style="accent-color:var(--p)"> Flash Deal</label>
     </div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
 }
 
-async function saveNewProd(){
-  const name=document.getElementById('pn').value.trim();
-  if(!name){showToast('Product name required');return;}
-  const id='p'+Date.now();
-  const price=+document.getElementById('pp').value||0;
-  const orig=+document.getElementById('pop').value||0;
-  const p={id,name,category:document.getElementById('pc').value,price,originalPrice:orig,discount:orig?Math.round((1-price/orig)*100):0,stock:+document.getElementById('pst').value||0,wattage:document.getElementById('pw').value,voltage:document.getElementById('pv').value,color:document.getElementById('pct').value,warranty:document.getElementById('pwa').value,image:document.getElementById('pi').value||'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED',description:document.getElementById('pd').value,isNew:document.getElementById('pnew').checked,isBestSeller:document.getElementById('pbest').checked,isFlashDeal:document.getElementById('pflash').checked,rating:4.0,reviews:0,createdAt:Date.now()};
-  await db.ref('products/'+id).set(p);
-  allProds.push(p);closeModal();renderProducts();showToast('Product added!');
+async function saveNewProd() {
+  const name = document.getElementById('pn').value.trim();
+  if (!name) {
+    showToast('Product name required');
+    return;
+  }
+  
+  const id = 'p' + Date.now();
+  const price = +document.getElementById('pp').value || 0;
+  const orig = +document.getElementById('pop').value || 0;
+  
+  const p = {
+    id, name, 
+    category: document.getElementById('pc').value, 
+    price, 
+    originalPrice: orig, 
+    discount: orig ? Math.round((1 - price / orig) * 100) : 0, 
+    stock: +document.getElementById('pst').value || 0, 
+    wattage: document.getElementById('pw').value, 
+    voltage: document.getElementById('pv').value, 
+    color: document.getElementById('pct').value, 
+    warranty: document.getElementById('pwa').value, 
+    image: document.getElementById('pi').value || 'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED', 
+    description: document.getElementById('pd').value, 
+    isNew: document.getElementById('pnew').checked, 
+    isBestSeller: document.getElementById('pbest').checked, 
+    isFlashDeal: document.getElementById('pflash').checked, 
+    rating: 4.0, 
+    reviews: 0, 
+    createdAt: Date.now()
+  };
+  
+  await db.ref('products/' + id).set(p);
+  allProds.push(p);
+  closeModal();
+  renderProducts();
+  showToast('Product added!');
 }
 
-function editProd(pid){
-  const p=allProds.find(x=>x.id===pid);if(!p)return;
-  openModal('Edit: '+p.name.substring(0,30),`
-    <div class="fg"><label>Name</label><input class="fc" id="epn" value="${p.name||''}"></div>
+function editProd(pid) {
+  const p = allProds.find(x => x.id === pid);
+  if (!p) return;
+  
+  openModal('Edit: ' + p.name.substring(0, 30), `
+    <div class="fg"><label>Name</label><input class="fc" id="epn" value="${p.name || ''}"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label>Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price||0}"></div>
-      <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock||0}"></div>
+      <div class="fg"><label>Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price || 0}"></div>
+      <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock || 0}"></div>
     </div>
-    <div class="fg"><label>Image URL</label><input class="fc" id="epi" value="${p.image||''}"></div>
-    <div class="fg"><label>Description</label><textarea class="fc" id="epd" rows="2">${p.description||''}</textarea></div>
+    <div class="fg"><label>Image URL</label><input class="fc" id="epi" value="${p.image || ''}"></div>
+    <div class="fg"><label>Description</label><textarea class="fc" id="epd" rows="2">${p.description || ''}</textarea></div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
-      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epnew" ${p.isNew?'checked':''} style="accent-color:var(--p)"> New</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epbest" ${p.isBestSeller?'checked':''} style="accent-color:var(--p)"> Best Seller</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epflash" ${p.isFlashDeal?'checked':''} style="accent-color:var(--p)"> Flash Deal</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epnew" ${p.isNew ? 'checked' : ''} style="accent-color:var(--p)"> New</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epbest" ${p.isBestSeller ? 'checked' : ''} style="accent-color:var(--p)"> Best Seller</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epflash" ${p.isFlashDeal ? 'checked' : ''} style="accent-color:var(--p)"> Flash Deal</label>
     </div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveEditProd('${pid}')"><i class="fas fa-save"></i> Save</button>`);
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveEditProd('${pid}')"><i class="fas fa-save"></i> Save</button>`);
 }
 
-async function saveEditProd(pid){
-  const u={name:document.getElementById('epn').value,price:+document.getElementById('epp').value,stock:+document.getElementById('epst').value,image:document.getElementById('epi').value,description:document.getElementById('epd').value,isNew:document.getElementById('epnew').checked,isBestSeller:document.getElementById('epbest').checked,isFlashDeal:document.getElementById('epflash').checked};
-  await db.ref('products/'+pid).update(u);
-  const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
-  closeModal();renderProducts();showToast('Product updated!');
+async function saveEditProd(pid) {
+  const u = {
+    name: document.getElementById('epn').value, 
+    price: +document.getElementById('epp').value, 
+    stock: +document.getElementById('epst').value, 
+    image: document.getElementById('epi').value, 
+    description: document.getElementById('epd').value, 
+    isNew: document.getElementById('epnew').checked, 
+    isBestSeller: document.getElementById('epbest').checked, 
+    isFlashDeal: document.getElementById('epflash').checked
+  };
+  
+  await db.ref('products/' + pid).update(u);
+  const i = allProds.findIndex(x => x.id === pid);
+  if (i > -1) Object.assign(allProds[i], u);
+  
+  closeModal();
+  renderProducts();
+  showToast('Product updated!');
 }
 
-async function delProd(pid){
-  if(!confirm('Delete this product?'))return;
-  await db.ref('products/'+pid).remove();
-  allProds=allProds.filter(x=>x.id!==pid);renderProducts();showToast('Product deleted');
+async function delProd(pid) {
+  if (!confirm('Delete this product?')) return;
+  await db.ref('products/' + pid).remove();
+  allProds = allProds.filter(x => x.id !== pid);
+  renderProducts();
+  showToast('Product deleted');
 }
 
-// ── Categories ───────────────────────────────────────────────
-const defaultCats=[{name:'Bulbs',icon:'💡',color:'#fff8e1'},{name:'Strip Lights',icon:'🌈',color:'#f3e5f5'},{name:'Panel Lights',icon:'⬜',color:'#e3f2fd'},{name:'Outdoor',icon:'🌿',color:'#e8f5e9'},{name:'Smart Lights',icon:'📡',color:'#e8eaf6'},{name:'Tube Lights',icon:'🔦',color:'#fce4ec'},{name:'Downlights',icon:'🔆',color:'#fff3e0'},{name:'Decorative',icon:'✨',color:'#fbe9e7'}];
+// ── Categories ────────────────────────────────────────────────────────
+const defaultCats = [
+  {name:'Bulbs', icon:'💡', color:'#fff8e1'},
+  {name:'Strip Lights', icon:'🌈', color:'#f3e5f5'},
+  {name:'Panel Lights', icon:'⬜', color:'#e3f2fd'},
+  {name:'Outdoor', icon:'🌿', color:'#e8f5e9'},
+  {name:'Smart Lights', icon:'📡', color:'#e8eaf6'},
+  {name:'Tube Lights', icon:'🔦', color:'#fce4ec'},
+  {name:'Downlights', icon:'🔆', color:'#fff3e0'},
+  {name:'Decorative', icon:'✨', color:'#fbe9e7'}
+];
 
-function renderCategories(){
-  const el=document.getElementById('catsGrid');if(!el)return;
-  el.innerHTML=defaultCats.map(c=>{const cnt=allProds.filter(p=>p.category===c.name).length;return`<div class="card cp" style="text-align:center">
-    <div style="font-size:30px;background:${c.color};width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 9px">${c.icon}</div>
-    <div style="font-weight:700;margin-bottom:3px">${c.name}</div>
-    <div style="font-size:11px;color:var(--m)">${cnt} product${cnt!==1?'s':''}</div>
-    <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
-      <div class="ab ab-b" onclick="showToast('Edit category: ${c.name}')"><i class="fas fa-edit"></i></div>
-      <div class="ab ab-r" onclick="showToast('Cannot delete built-in category')"><i class="fas fa-trash"></i></div>
-    </div>
-  </div>`;}).join('');
+function renderCategories() {
+  const el = document.getElementById('catsGrid');
+  if (!el) return;
+  
+  el.innerHTML = defaultCats.map(c => {
+    const cnt = allProds.filter(p => p.category === c.name).length;
+    return `<div class="card cp" style="text-align:center">
+      <div style="font-size:30px;background:${c.color};width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 9px">${c.icon}</div>
+      <div style="font-weight:700;margin-bottom:3px">${c.name}</div>
+      <div style="font-size:11px;color:var(--m)">${cnt} product${cnt !== 1 ? 's' : ''}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+        <div class="ab ab-b" onclick="showToast('Edit category: ${c.name}')"><i class="fas fa-edit"></i></div>
+        <div class="ab ab-r" onclick="showToast('Cannot delete built-in category')"><i class="fas fa-trash"></i></div>
+      </div>
+    </div>`;
+  }).join('');
 }
-function openAddCat(){openModal('Add Category',`<div class="fg"><label>Name*</label><input class="fc" id="ncn" placeholder="Category name"></div><div class="fg"><label>Icon (Emoji)</label><input class="fc" id="nci" placeholder="💡" style="max-width:80px"></div>`,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="closeModal();showToast('Category added!')">Add Category</button>`);}
 
-// ── Inventory ─────────────────────────────────────────────────
-function renderInventory(){
-  const q=(document.getElementById('invQ')||{}).value||'';
-  const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase()));
-  document.getElementById('invBody').innerHTML=list.map(p=>`<tr>
+function openAddCat() {
+  openModal('Add Category', `
+    <div class="fg"><label>Name*</label><input class="fc" id="ncn" placeholder="Category name"></div>
+    <div class="fg"><label>Icon (Emoji)</label><input class="fc" id="nci" placeholder="💡" style="max-width:80px"></div>
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="closeModal();showToast('Category added!')">Add Category</button>`);
+}
+
+// ── Inventory ─────────────────────────────────────────────────────────
+function renderInventory() {
+  const q = (document.getElementById('invQ') || {}).value || '';
+  const list = allProds.filter(p => !q || p.name.toLowerCase().includes(q.toLowerCase()));
+  
+  document.getElementById('invBody').innerHTML = list.map(p => `<tr>
     <td><strong style="font-size:12.5px">${p.name}</strong></td>
     <td>${p.category}</td>
-    <td><input type="number" value="${p.stock||0}" style="width:68px;padding:5px;border:1.5px solid var(--b);border-radius:6px;font-size:13px;background:var(--c);color:var(--t)" id="inv-${p.id}"></td>
+    <td><input type="number" value="${p.stock || 0}" style="width:68px;padding:5px;border:1.5px solid var(--b);border-radius:6px;font-size:13px;background:var(--c);color:var(--t)" id="inv-${p.id}"></td>
     <td style="color:var(--m)">5</td>
-    <td><span class="pill ${(p.stock||0)>5?'p-g':(p.stock||0)>0?'p-o':'p-r'}">${(p.stock||0)>5?'OK':(p.stock||0)>0?'Low':'Out'}</span></td>
+    <td><span class="pill ${(p.stock || 0) > 5 ? 'p-g' : (p.stock || 0) > 0 ? 'p-o' : 'p-r'}">${(p.stock || 0) > 5 ? 'OK' : (p.stock || 0) > 0 ? 'Low' : 'Out'}</span></td>
     <td><div class="ab ab-b" onclick="saveStock('${p.id}')" title="Save"><i class="fas fa-save"></i></div></td>
-  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
+  </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No products</td></tr>`;
 }
 
-async function saveStock(pid){
-  const el=document.getElementById('inv-'+pid);if(!el)return;
-  const val=+el.value;
-  await db.ref('products/'+pid+'/stock').set(val);
-  const p=allProds.find(x=>x.id===pid);if(p)p.stock=val;
-  showToast('Stock updated to '+val);
+async function saveStock(pid) {
+  const el = document.getElementById('inv-' + pid);
+  if (!el) return;
+  const val = +el.value;
+  
+  await db.ref('products/' + pid + '/stock').set(val);
+  const p = allProds.find(x => x.id === pid);
+  if (p) p.stock = val;
+  
+  showToast('Stock updated to ' + val);
 }
 
-// ── Customers ─────────────────────────────────────────────────
-function renderCustomers(){
-  const q=(document.getElementById('custQ')||{}).value||'';
-  const list=allCusts.filter(u=>!q||(u.name||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').toLowerCase().includes(q.toLowerCase())||(u.phone||'').includes(q));
-  document.getElementById('custsBody').innerHTML=list.map(u=>{
-    const ords=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email);
-    const spent=ords.reduce((s,o)=>s+(o.total||0),0);
-    return`<tr>
-      <td><strong>${u.name||'—'}</strong></td>
-      <td style="font-size:12px">${u.email||'—'}</td>
-      <td>${u.phone||'—'}</td>
+// ── Customers ─────────────────────────────────────────────────────────
+function renderCustomers() {
+  const q = (document.getElementById('custQ') || {}).value || '';
+  const list = allCusts.filter(u => !q || (u.name || '').toLowerCase().includes(q.toLowerCase()) || (u.email || '').toLowerCase().includes(q.toLowerCase()) || (u.phone || '').includes(q));
+  
+  document.getElementById('custsBody').innerHTML = list.map(u => {
+    const ords = allOrders.filter(o => o.userId === u.id || o.userEmail === u.email);
+    const spent = ords.reduce((s, o) => s + (o.total || 0), 0);
+    return `<tr>
+      <td><strong>${u.name || '—'}</strong></td>
+      <td style="font-size:12px">${u.email || '—'}</td>
+      <td>${u.phone || '—'}</td>
       <td>${ords.length}</td>
       <td>₹${spent.toLocaleString('en-IN')}</td>
-      <td style="font-size:11px">${u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+      <td style="font-size:11px">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '—'}</td>
       <td><div class="tda">
-        <div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+        <div class="ab ab-wa" onclick="waCustomer('${u.phone || ''}', '${u.name || 'Customer'}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
         <div class="ab ab-b" onclick="viewCust('${u.id}')" title="View"><i class="fas fa-eye"></i></div>
         <div class="ab ab-r" onclick="delCust('${u.id}')" title="Remove"><i class="fas fa-trash"></i></div>
       </div></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No customers</td></tr>`;
+  }).join('') || `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--m)">No customers</td></tr>`;
 }
 
-function viewCust(uid){
-  const u=allCusts.find(x=>x.id===uid);if(!u)return;
-  const ords=allOrders.filter(o=>o.userId===uid||o.userEmail===u.email);
-  openModal(u.name||'Customer',`<div style="font-size:13px">
-    ${[['Name',u.name||'—'],['Email',u.email||'—'],['Phone',u.phone||'—'],['Address',u.address||'—'],['Orders',ords.length],['Total Spent','₹'+ords.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN')],['Joined',u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
-  </div>`,`<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone||''}','${u.name||''}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
+function viewCust(uid) {
+  const u = allCusts.find(x => x.id === uid);
+  if (!u) return;
+  const ords = allOrders.filter(o => o.userId === uid || o.userEmail === u.email);
+  const spent = ords.reduce((s, o) => s + (o.total || 0), 0);
+  
+  openModal(u.name || 'Customer', `<div style="font-size:13px">
+    ${[['Name', u.name || '—'], ['Email', u.email || '—'], ['Phone', u.phone || '—'], ['Address', u.address || '—'], ['Orders', ords.length], ['Total Spent', '₹' + spent.toLocaleString('en-IN')], ['Joined', u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '—']].map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+  </div>`, `<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone || ''}', '${u.name || ''}'); closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
 }
 
-function openAddCust(){
-  openModal('Add Customer',`
+function openAddCust() {
+  openModal('Add Customer', `
     <div class="fg"><label>Full Name*</label><input class="fc" id="ncname" placeholder="Full name"></div>
     <div class="fg"><label>Email</label><input class="fc" id="ncemail" type="email" placeholder="email@example.com"></div>
     <div class="fg"><label>Phone*</label><input class="fc" id="ncphone" placeholder="+91 98765 43210"></div>
     <div class="fg"><label>Address</label><textarea class="fc" id="ncaddr" rows="2" placeholder="Delivery address"></textarea></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewCust()">Add Customer</button>`);
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewCust()">Add Customer</button>`);
 }
 
-async function saveNewCust(){
-  const name=document.getElementById('ncname').value.trim();
-  if(!name){showToast('Name required');return;}
-  const id='cust'+Date.now();
-  const c={id,name,email:document.getElementById('ncemail').value,phone:document.getElementById('ncphone').value,address:document.getElementById('ncaddr').value,role:'customer',createdAt:Date.now()};
-  await db.ref('users/'+id).set(c);
-  allCusts.push(c);closeModal();renderCustomers();showToast('Customer added!');
+async function saveNewCust() {
+  const name = document.getElementById('ncname').value.trim();
+  if (!name) { showToast('Name required'); return; }
+  
+  const id = 'cust' + Date.now();
+  const c = {
+    id, name, 
+    email: document.getElementById('ncemail').value, 
+    phone: document.getElementById('ncphone').value, 
+    address: document.getElementById('ncaddr').value, 
+    role: 'customer', 
+    createdAt: Date.now()
+  };
+  
+  await db.ref('users/' + id).set(c);
+  allCusts.push(c);
+  closeModal();
+  renderCustomers();
+  showToast('Customer added!');
 }
 
-async function delCust(uid){
-  if(!confirm('Remove this customer?'))return;
-  await db.ref('users/'+uid).remove();
-  allCusts=allCusts.filter(x=>x.id!==uid);renderCustomers();showToast('Customer removed');
+async function delCust(uid) {
+  if (!confirm('Remove this customer?')) return;
+  await db.ref('users/' + uid).remove();
+  allCusts = allCusts.filter(x => x.id !== uid);
+  renderCustomers();
+  showToast('Customer removed');
 }
 
-function waCustomer(phone,name){
-  const p=phone.replace(/\D/g,'');
-  const msg=encodeURIComponent(`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡 We hope you're enjoying your LED products! For any queries, just reply here.`);
-  if(p)window.open(`https://wa.me/${p}?text=${msg}`,'_blank');
-  else{document.getElementById('waPhone').value=phone||'';document.getElementById('waName').value=name||'';document.getElementById('waMsg').value=`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡`;nav('whatsapp');}
+function waCustomer(phone, name) {
+  const p = phone.replace(/\D/g, '');
+  const msg = encodeURIComponent(`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡 We hope you're enjoying your LED products! For any queries, just reply here.`);
+  
+  if (p) {
+    window.open(`https://wa.me/${p}?text=${msg}`, '_blank');
+  } else {
+    document.getElementById('waPhone').value = phone || '';
+    document.getElementById('waName').value = name || '';
+    document.getElementById('waMsg').value = `Hi ${name}! Thank you for shopping at Prince Enterprise. 💡`;
+    nav('whatsapp');
+  }
 }
 
-// ── Coupons ───────────────────────────────────────────────────
-function renderCoupons(){
-  document.getElementById('couponsWrap').innerHTML=allCoupons.map(c=>`
-    <div class="coup" style="${c.active?'':'opacity:.55;filter:grayscale(.5)'}">
+// ── Coupons ───────────────────────────────────────────────────────────
+function renderCoupons() {
+  document.getElementById('couponsWrap').innerHTML = allCoupons.map(c => `
+    <div class="coup" style="${c.active ? '' : 'opacity:.55;filter:grayscale(.5)'}">
       <div style="flex:1;position:relative;z-index:1">
         <div class="coup-code">${c.code}</div>
-        <div class="coup-info">${c.desc||''}</div>
-        <div class="coup-info" style="margin-top:3px">Used: ${c.uses||0} times · ${c.active?'✅ Active':'⏸ Inactive'}</div>
+        <div class="coup-info">${c.desc || ''}</div>
+        <div class="coup-info" style="margin-top:3px">Used: ${c.uses || 0} times · ${c.active ? '✅ Active' : '⏸ Inactive'}</div>
       </div>
       <div style="position:relative;z-index:1">
-        <div class="coup-val">${c.discount}${c.type==='percent'?'%':'₹'}</div>
+        <div class="coup-val">${c.discount}${c.type === 'percent' ? '%' : '₹'}</div>
         <div class="coup-acts">
-          <div class="ab ab-b" onclick="toggleCoup('${c.id}',${!c.active})" title="${c.active?'Disable':'Enable'}" style="background:rgba(255,255,255,.2);color:#fff"><i class="fas fa-${c.active?'pause':'play'}"></i></div>
+          <div class="ab ab-b" onclick="toggleCoup('${c.id}', ${!c.active})" title="${c.active ? 'Disable' : 'Enable'}" style="background:rgba(255,255,255,.2);color:#fff"><i class="fas fa-${c.active ? 'pause' : 'play'}"></i></div>
           <div class="ab ab-r" onclick="delCoup('${c.id}')" title="Delete" style="background:rgba(255,0,0,.3);color:#fff"><i class="fas fa-trash"></i></div>
         </div>
       </div>
     </div>
-  `).join('')||'<div class="card cp" style="text-align:center;color:var(--m)">No coupons yet. Create one!</div>';
+  `).join('') || '<div class="card cp" style="text-align:center;color:var(--m)">No coupons yet. Create one!</div>';
 }
 
-function openAddCoupon(){
-  openModal('Generate Coupon',`
-    <div class="fg"><label>Coupon Code*</label><div style="display:flex;gap:8px"><input class="fc" id="cpc" placeholder="e.g. SALE20" style="flex:1;text-transform:uppercase"><button class="btn btn-sm" style="background:var(--bg);color:var(--t2);border:1.5px solid var(--b)" onclick="document.getElementById('cpc').value='PE'+Math.random().toString(36).substring(2,6).toUpperCase()">Auto</button></div></div>
+function openAddCoupon() {
+  openModal('Generate Coupon', `
+    <div class="fg">
+      <label>Coupon Code*</label>
+      <div style="display:flex;gap:8px">
+        <input class="fc" id="cpc" placeholder="e.g. SALE20" style="flex:1;text-transform:uppercase">
+        <button class="btn btn-sm" style="background:var(--bg);color:var(--t2);border:1.5px solid var(--b)" onclick="document.getElementById('cpc').value='PE'+Math.random().toString(36).substring(2,6).toUpperCase()">Auto</button>
+      </div>
+    </div>
     <div class="fg"><label>Description</label><input class="fc" id="cpd" placeholder="e.g. 20% off LED strips"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label>Discount Value*</label><input class="fc" id="cpv" type="number" placeholder="20"></div>
@@ -984,146 +1265,200 @@ function openAddCoupon(){
     </div>
     <div class="fg"><label>Max Uses (0 = unlimited)</label><input class="fc" id="cpm" type="number" placeholder="0" value="0"></div>
     <div class="fg"><label>Expiry Date (optional)</label><input class="fc" id="cpe" type="date"></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveCoupon()"><i class="fas fa-tag"></i> Create Coupon</button>`);
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveCoupon()"><i class="fas fa-tag"></i> Create Coupon</button>`);
 }
 
-async function saveCoupon(){
-  const code=document.getElementById('cpc').value.trim().toUpperCase();
-  if(!code){showToast('Coupon code required');return;}
-  const id='coup'+Date.now();
-  const c={id,code,desc:document.getElementById('cpd').value,discount:+document.getElementById('cpv').value||10,type:document.getElementById('cpt').value,maxUses:+document.getElementById('cpm').value||0,expiry:document.getElementById('cpe').value||null,uses:0,active:true,createdAt:Date.now()};
-  await db.ref('coupons/'+id).set(c);
-  allCoupons.unshift(c);closeModal();renderCoupons();showToast('Coupon created: '+code);
+async function saveCoupon() {
+  const code = document.getElementById('cpc').value.trim().toUpperCase();
+  if (!code) { showToast('Coupon code required'); return; }
+  
+  const id = 'coup' + Date.now();
+  const c = {
+    id, code, 
+    desc: document.getElementById('cpd').value, 
+    discount: +document.getElementById('cpv').value || 10, 
+    type: document.getElementById('cpt').value, 
+    maxUses: +document.getElementById('cpm').value || 0, 
+    expiry: document.getElementById('cpe').value || null, 
+    uses: 0, 
+    active: true, 
+    createdAt: Date.now()
+  };
+  
+  await db.ref('coupons/' + id).set(c);
+  allCoupons.unshift(c);
+  closeModal();
+  renderCoupons();
+  showToast('Coupon created: ' + code);
 }
 
-async function toggleCoup(id,active){
-  await db.ref('coupons/'+id+'/active').set(active);
-  const c=allCoupons.find(x=>x.id===id);if(c)c.active=active;
-  renderCoupons();showToast(active?'Coupon enabled':'Coupon disabled');
+async function toggleCoup(id, active) {
+  await db.ref('coupons/' + id + '/active').set(active);
+  const c = allCoupons.find(x => x.id === id);
+  if (c) c.active = active;
+  renderCoupons();
+  showToast(active ? 'Coupon enabled' : 'Coupon disabled');
 }
 
-async function delCoup(id){
-  if(!confirm('Delete this coupon?'))return;
-  await db.ref('coupons/'+id).remove();
-  allCoupons=allCoupons.filter(x=>x.id!==id);renderCoupons();showToast('Coupon deleted');
+async function delCoup(id) {
+  if (!confirm('Delete this coupon?')) return;
+  await db.ref('coupons/' + id).remove();
+  allCoupons = allCoupons.filter(x => x.id !== id);
+  renderCoupons();
+  showToast('Coupon deleted');
 }
 
-// ── Notifications ─────────────────────────────────────────────
-async function sendNotif(){
-  const title=document.getElementById('ntTitle').value.trim();
-  const msg=document.getElementById('ntMsg').value.trim();
-  if(!title||!msg){showToast('Title and message required');return;}
-  const ico=document.getElementById('ntIco').value||'🔔';
-  // Write to all users' notifications
-  const notifId='notif'+Date.now();
-  const notif={id:notifId,title,desc:msg,icon:ico,iconBg:'#e3f2fd',iconColor:'#1565c0',time:'Just now',unread:true,createdAt:Date.now()};
-  allCusts.forEach(u=>{db.ref('notifications/'+u.id+'/'+notifId).set(notif);});
-  // Log
-  await db.ref('notifHistory/'+notifId).set({...notif,recipients:allCusts.length});
-  showToast('Notification sent to '+allCusts.length+' users!');
-  document.getElementById('ntTitle').value='';document.getElementById('ntMsg').value='';
+// ── Notifications ─────────────────────────────────────────────────────
+async function sendNotif() {
+  const title = document.getElementById('ntTitle').value.trim();
+  const msg = document.getElementById('ntMsg').value.trim();
+  
+  if (!title || !msg) { showToast('Title and message required'); return; }
+  
+  const ico = document.getElementById('ntIco').value || '🔔';
+  const notifId = 'notif' + Date.now();
+  
+  const notif = {
+    id: notifId, title, desc: msg, icon: ico, 
+    iconBg: '#e3f2fd', iconColor: '#1565c0', 
+    time: 'Just now', unread: true, createdAt: Date.now()
+  };
+  
+  allCusts.forEach(u => {
+    db.ref('notifications/' + u.id + '/' + notifId).set(notif);
+  });
+  
+  await db.ref('notifHistory/' + notifId).set({...notif, recipients: allCusts.length});
+  
+  showToast('Notification sent to ' + allCusts.length + ' users!');
+  document.getElementById('ntTitle').value = '';
+  document.getElementById('ntMsg').value = '';
   renderNotifHistory();
 }
 
-async function renderNotifHistory(){
-  const snap=await db.ref('notifHistory').orderByChild('createdAt').limitToLast(10).get();
-  const hist=snap.val()?Object.values(snap.val()).reverse():[];
-  const el=document.getElementById('ntHistBody');if(!el)return;
-  el.innerHTML=hist.map(n=>`<tr><td><strong>${n.title}</strong></td><td style="font-size:12px;max-width:200px">${n.desc}</td><td style="font-size:11px">${n.createdAt?new Date(n.createdAt).toLocaleString('en-IN'):'—'}</td><td>${n.recipients||0}</td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No notifications sent</td></tr>`;
+async function renderNotifHistory() {
+  const snap = await db.ref('notifHistory').orderByChild('createdAt').limitToLast(10).get();
+  const hist = snap.val() ? Object.values(snap.val()).reverse() : [];
+  const el = document.getElementById('ntHistBody');
+  if (!el) return;
+  
+  el.innerHTML = hist.map(n => `<tr><td><strong>${n.title}</strong></td><td style="font-size:12px;max-width:200px">${n.desc}</td><td style="font-size:11px">${n.createdAt ? new Date(n.createdAt).toLocaleString('en-IN') : '—'}</td><td>${n.recipients || 0}</td></tr>`).join('') || `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No notifications sent</td></tr>`;
 }
 
-// ── WhatsApp ──────────────────────────────────────────────────
-function renderWATemplates(){
-  const tpls=[{icon:'📦',name:'Order Confirmed',msg:`Hi {name}! Your order #{orderId} has been confirmed at Prince Enterprise. We'll dispatch it soon. Thank you! 💡`},{icon:'🚚',name:'Order Shipped',msg:`Hi {name}! Your order #{orderId} has been shipped and is on its way. Expected delivery in 2-3 days. 🚚`},{icon:'✅',name:'Order Delivered',msg:`Hi {name}! Your order has been delivered. Hope you love your new LED products! Rate us at princeenterprise.com ⭐`},{icon:'🎁',name:'Promotional Offer',msg:`Hi {name}! Prince Enterprise FLASH SALE 🔥 Up to 60% OFF on LED lights! Shop now. Use code PRINCE10 for extra 10% off.`},{icon:'⭐',name:'Review Request',msg:`Hi {name}! How are you enjoying your LED products from Prince Enterprise? Leave us a review and get 5% off your next order! 🌟`}];
-  const el=document.getElementById('waTemplates');if(!el)return;
-  el.innerHTML=tpls.map(t=>`<div style="background:var(--bg);border-radius:var(--rd);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:9px;border:1.5px solid var(--b)">
+// ── WhatsApp ──────────────────────────────────────────────────────────
+function renderWATemplates() {
+  const el = document.getElementById('waTemplates');
+  if (!el) return;
+  
+  el.innerHTML = waTemplatesList.map((t, i) => `<div style="background:var(--bg);border-radius:var(--rd);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:9px;border:1.5px solid var(--b)">
     <div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:3px">${t.icon} ${t.name}</div><div style="font-size:11.5px;color:var(--m);line-height:1.4">${t.msg.substring(0,80)}…</div></div>
-    <div class="ab ab-wa" onclick="useTemplate('${t.msg.replace(/'/g,"\\'")}')"><i class="fas fa-arrow-right"></i></div>
+    <div class="ab ab-wa" onclick="useTemplate(${i})"><i class="fas fa-arrow-right"></i></div>
   </div>`).join('');
 }
 
-function useTemplate(msg){
-  document.getElementById('waMsg').value=msg;showToast('Template loaded');
-}
-function waTemplateOrder(){document.getElementById('waMsg').value=`Hi! Your Prince Enterprise order has been confirmed. We'll update you on the shipping soon. Thank you for shopping with us! 💡`;}
-function waTemplatePromo(){document.getElementById('waMsg').value=`Hi! 🔥 FLASH SALE at Prince Enterprise! Up to 60% off on LED Lights & Electronics. Shop now. Use code PRINCE10 for extra 10% off!`;}
-
-function doSendWA(){
-  const phone=document.getElementById('waPhone').value.replace(/\D/g,'');
-  const msg=document.getElementById('waMsg').value.trim();
-  if(!msg){showToast('Enter a message');return;}
-  if(phone)window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
-  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+function useTemplate(idx) {
+  document.getElementById('waMsg').value = waTemplatesList[idx].msg;
+  showToast('Template loaded');
 }
 
-function renderWACustomers(){
-  const el=document.getElementById('waCustomerBody');if(!el)return;
-  el.innerHTML=allCusts.slice(0,10).map(u=>{
-    const lastOrd=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email)[0];
-    return`<tr>
-      <td><strong>${u.name||'—'}</strong></td>
-      <td>${u.phone||'—'}</td>
-      <td style="font-size:11.5px">${lastOrd?`#${lastOrd.orderId} (${lastOrd.status})`:'No orders'}</td>
-      <td><div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="Send WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
+function waTemplateOrder() {
+  document.getElementById('waMsg').value = "Hi! Your Prince Enterprise order has been confirmed. We'll update you on the shipping soon. Thank you for shopping with us! 💡";
+}
+
+function waTemplatePromo() {
+  document.getElementById('waMsg').value = "Hi! 🔥 FLASH SALE at Prince Enterprise! Up to 60% off on LED Lights & Electronics. Shop now. Use code PRINCE10 for extra 10% off!";
+}
+
+function doSendWA() {
+  const phone = document.getElementById('waPhone').value.replace(/\D/g, '');
+  const msg = document.getElementById('waMsg').value.trim();
+  if (!msg) { showToast('Enter a message'); return; }
+  
+  if (phone) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function renderWACustomers() {
+  const el = document.getElementById('waCustomerBody');
+  if (!el) return;
+  
+  el.innerHTML = allCusts.slice(0, 10).map(u => {
+    const lastOrd = allOrders.filter(o => o.userId === u.id || o.userEmail === u.email)[0];
+    return `<tr>
+      <td><strong>${u.name || '—'}</strong></td>
+      <td>${u.phone || '—'}</td>
+      <td style="font-size:11.5px">${lastOrd ? `#${lastOrd.orderId} (${lastOrd.status})` : 'No orders'}</td>
+      <td><div class="ab ab-wa" onclick="waCustomer('${u.phone || ''}', '${u.name || 'Customer'}')" title="Send WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No customers</td></tr>`;
+  }).join('') || `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No customers</td></tr>`;
 }
 
-// ── Banners ───────────────────────────────────────────────────
-function renderBanners(){
-  const bans=[{title:'Flash Sale — 60% OFF LED',sub:'Brighten your home & save big!',badge:'⚡ Flash Sale',bg:'#0d1b5e',active:true},{title:'Smart RGB Strip Lights',sub:'Color changing. App controlled.',badge:'🆕 New Arrival',bg:'#4a0073',active:true},{title:'Energy Saving — Save 80%',sub:'Premium LED technology',badge:'🌿 Eco',bg:'#1b4010',active:false},{title:'Buy 2 Get 1 Free Deal',sub:'On selected LED panels',badge:'🎁 Offer',bg:'#7c1010',active:true}];
-  const el=document.getElementById('bannersWrap');if(!el)return;
-  el.innerHTML=bans.map((b,i)=>`<div class="card" style="margin-bottom:10px;overflow:hidden">
+// ── Banners ───────────────────────────────────────────────────────────
+function renderBanners() {
+  const bans = [
+    {title:'Flash Sale — 60% OFF LED', sub:'Brighten your home & save big!', badge:'⚡ Flash Sale', bg:'#0d1b5e', active:true},
+    {title:'Smart RGB Strip Lights', sub:'Color changing. App controlled.', badge:'🆕 New Arrival', bg:'#4a0073', active:true},
+    {title:'Energy Saving — Save 80%', sub:'Premium LED technology', badge:'🌿 Eco', bg:'#1b4010', active:false},
+    {title:'Buy 2 Get 1 Free Deal', sub:'On selected LED panels', badge:'🎁 Offer', bg:'#7c1010', active:true}
+  ];
+  
+  const el = document.getElementById('bannersWrap');
+  if (!el) return;
+  
+  el.innerHTML = bans.map((b, i) => `<div class="card" style="margin-bottom:10px;overflow:hidden">
     <div style="background:${b.bg};padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
       <div><span style="background:rgba(255,255,255,.2);color:#fff;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;display:inline-block;margin-bottom:5px">${b.badge}</span><h3 style="color:#fff;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:2px">${b.title}</h3><p style="color:rgba(255,255,255,.75);font-size:12px">${b.sub}</p></div>
-      <span class="pill ${b.active?'p-g':'p-gr'}">${b.active?'Active':'Inactive'}</span>
+      <span class="pill ${b.active ? 'p-g' : 'p-gr'}">${b.active ? 'Active' : 'Inactive'}</span>
     </div>
     <div class="cp" style="display:flex;gap:7px;align-items:center;padding:10px 14px">
       <div class="ab ab-b" onclick="showToast('Edit banner ${i+1}')"><i class="fas fa-edit"></i></div>
-      <div class="ab ${b.active?'ab-o':'ab-g'}" onclick="showToast('Banner ${b.active?'deactivated':'activated'}')"><i class="fas fa-${b.active?'pause':'play'}"></i></div>
+      <div class="ab ${b.active ? 'ab-o' : 'ab-g'}" onclick="showToast('Banner ${b.active ? 'deactivated' : 'activated'}')"><i class="fas fa-${b.active ? 'pause' : 'play'}"></i></div>
       <div class="ab ab-r" onclick="showToast('Banner removed')"><i class="fas fa-trash"></i></div>
       <span style="font-size:11px;color:var(--m);margin-left:auto">Position: ${i+1}</span>
     </div>
   </div>`).join('');
 }
 
-function openAddBanner(){
-  openModal('Add Banner',`
+function openAddBanner() {
+  openModal('Add Banner', `
     <div class="fg"><label>Headline*</label><input class="fc" id="bnh" placeholder="Big Bold Headline"></div>
     <div class="fg"><label>Subtitle</label><input class="fc" id="bns" placeholder="Supporting text"></div>
     <div class="fg"><label>Badge Text</label><input class="fc" id="bnb" placeholder="⚡ Flash Sale"></div>
     <div class="fg"><label>Button Label</label><input class="fc" id="bnbtn" placeholder="Shop Now"></div>
     <div class="fg"><label>Background Color</label><input class="fc" id="bnc" type="color" value="#1565c0"></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="closeModal();showToast('Banner added!')">Add Banner</button>`);
+  `, `<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="closeModal();showToast('Banner added!')">Add Banner</button>`);
 }
 
-// ── Payments ──────────────────────────────────────────────────
-function renderPayments(){
-  const upi=allOrders.filter(o=>o.paymentMethod==='UPI').reduce((s,o)=>s+(o.total||0),0);
-  const cod=allOrders.filter(o=>o.paymentMethod==='COD').reduce((s,o)=>s+(o.total||0),0);
-  const total=upi+cod;
-  document.getElementById('payStats').innerHTML=`
+// ── Payments ──────────────────────────────────────────────────────────
+function renderPayments() {
+  const upi = allOrders.filter(o => o.paymentMethod === 'UPI').reduce((s, o) => s + (o.total || 0), 0);
+  const cod = allOrders.filter(o => o.paymentMethod === 'COD').reduce((s, o) => s + (o.total || 0), 0);
+  const total = upi + cod;
+  
+  document.getElementById('payStats').innerHTML = `
     <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${total.toLocaleString('en-IN')}</div><div class="sc-lbl">Total Revenue</div></div>
     <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-qrcode"></i></div><div class="sc-val">₹${upi.toLocaleString('en-IN')}</div><div class="sc-lbl">UPI Payments</div></div>
     <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-money-bill-wave"></i></div><div class="sc-val">₹${cod.toLocaleString('en-IN')}</div><div class="sc-lbl">COD Payments</div></div>
   `;
-  document.getElementById('payBody').innerHTML=allOrders.map(o=>`<tr>
-    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
-    <td><strong>₹${o.total||0}</strong></td>
-    <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
-    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
-  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No payments</td></tr>`;
+  
+  document.getElementById('payBody').innerHTML = allOrders.map(o => `<tr>
+    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId || o.id}</strong></td>
+    <td style="font-size:12px">${o.userEmail || '—'}</td>
+    <td><strong>₹${o.total || 0}</strong></td>
+    <td><span class="pill ${o.paymentMethod === 'UPI' ? 'p-b' : 'p-g'}">${o.paymentMethod || 'COD'}</span></td>
+    <td style="font-size:11px">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+    <td><span class="pill ${stPill[o.status] || 'p-gr'}">${o.status || '—'}</span></td>
+  </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No payments</td></tr>`;
 }
 
-// ── Reports ───────────────────────────────────────────────────
-function renderReports(){
-  const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
-  const avg=allOrders.length?Math.round(total/allOrders.length):0;
-  const del=allOrders.filter(o=>o.status==='Delivered').length;
-  const conv=allOrders.length&&allCusts.length?Math.round(del/allCusts.length*100):0;
-  document.getElementById('reportStats').innerHTML=`
+// ── Reports ───────────────────────────────────────────────────────────
+function renderReports() {
+  const total = allOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const avg = allOrders.length ? Math.round(total / allOrders.length) : 0;
+  const del = allOrders.filter(o => o.status === 'Delivered').length;
+  const conv = allOrders.length && allCusts.length ? Math.round(del / allCusts.length * 100) : 0;
+  
+  document.getElementById('reportStats').innerHTML = `
     <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">₹${total.toLocaleString('en-IN')}</div><div style="font-size:12px;color:var(--m)">Total Revenue</div></div>
     <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${allOrders.length}</div><div style="font-size:12px;color:var(--m)">Total Orders</div></div>
     <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">₹${avg}</div><div style="font-size:12px;color:var(--m)">Avg Order Value</div></div>
@@ -1131,27 +1466,41 @@ function renderReports(){
     <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${del}</div><div style="font-size:12px;color:var(--m)">Delivered Orders</div></div>
     <div class="card cp"><div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:900">${conv}%</div><div style="font-size:12px;color:var(--m)">Conversion Rate</div></div>
   `;
+  
   // Top products
-  const sorted=[...allProds].sort((a,b)=>(b.reviews||0)-(a.reviews||0)).slice(0,5);
-  document.getElementById('topProds').innerHTML=sorted.map((p,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--d)">
+  const sorted = [...allProds].sort((a, b) => (b.reviews || 0) - (a.reviews || 0)).slice(0, 5);
+  document.getElementById('topProds').innerHTML = sorted.map((p, i) => `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--d)">
     <span style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:900;color:var(--m);min-width:18px">#${i+1}</span>
     <img src="${p.image}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">
-    <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div><div style="font-size:11px;color:var(--m)">${p.reviews||0} reviews · ₹${p.price}</div></div>
+    <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div><div style="font-size:11px;color:var(--m)">${p.reviews || 0} reviews · ₹${p.price}</div></div>
     <span class="pill p-g">₹${p.price}</span>
   </div>`).join('');
+  
   // Category breakdown
-  const cats=['Bulbs','Strip Lights','Panel Lights','Outdoor','Smart Lights','Tube Lights','Downlights','Decorative'];
-  document.getElementById('catBreak').innerHTML=cats.map(c=>{const cnt=allProds.filter(p=>p.category===c).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d);font-size:12.5px"><span>${c}</span><span class="pill p-b">${cnt}</span></div>`;}).join('');
+  const cats = ['Bulbs', 'Strip Lights', 'Panel Lights', 'Outdoor', 'Smart Lights', 'Tube Lights', 'Downlights', 'Decorative'];
+  document.getElementById('catBreak').innerHTML = cats.map(c => {
+    const cnt = allProds.filter(p => p.category === c).length;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d);font-size:12.5px"><span>${c}</span><span class="pill p-b">${cnt}</span></div>`;
+  }).join('');
 }
 
-// ── Reviews ───────────────────────────────────────────────────
-function renderReviews(){
-  const sampleRevs=[{product:'9W LED Bulb',customer:'Rohit S.',rating:5,text:'Excellent! Very bright.',date:'2024-12-10',status:'approved'},{product:'RGB Strip 5M',customer:'Priya M.',rating:4,text:'Good quality, easy to install.',date:'2024-12-08',status:'approved'},{product:'Panel Light 12W',customer:'Arun K.',rating:3,text:'Average quality, expected brighter.',date:'2024-12-05',status:'pending'},{product:'Smart WiFi Bulb',customer:'Neha T.',rating:5,text:'Works great with Google Home!',date:'2024-12-02',status:'approved'},{product:'LED Tube Light',customer:'Vijay R.',rating:4,text:'Good replacement for fluorescent.',date:'2024-11-28',status:'pending'}];
-  const el=document.getElementById('reviewsBody');if(!el)return;
-  el.innerHTML=sampleRevs.map(r=>`<tr>
+// ── Reviews ───────────────────────────────────────────────────────────
+function renderReviews() {
+  const sampleRevs = [
+    {product:'9W LED Bulb', customer:'Rohit S.', rating:5, text:'Excellent! Very bright.', date:'2024-12-10', status:'approved'},
+    {product:'RGB Strip 5M', customer:'Priya M.', rating:4, text:'Good quality, easy to install.', date:'2024-12-08', status:'approved'},
+    {product:'Panel Light 12W', customer:'Arun K.', rating:3, text:'Average quality, expected brighter.', date:'2024-12-05', status:'pending'},
+    {product:'Smart WiFi Bulb', customer:'Neha T.', rating:5, text:'Works great with Google Home!', date:'2024-12-02', status:'approved'},
+    {product:'LED Tube Light', customer:'Vijay R.', rating:4, text:'Good replacement for fluorescent.', date:'2024-11-28', status:'pending'}
+  ];
+  
+  const el = document.getElementById('reviewsBody');
+  if (!el) return;
+  
+  el.innerHTML = sampleRevs.map(r => `<tr>
     <td><strong>${r.product}</strong></td>
     <td>${r.customer}</td>
-    <td><span class="pill ${r.rating>=4?'p-g':r.rating>=3?'p-o':'p-r'}">${r.rating}⭐</span></td>
+    <td><span class="pill ${r.rating >= 4 ? 'p-g' : r.rating >= 3 ? 'p-o' : 'p-r'}">${r.rating}⭐</span></td>
     <td style="max-width:180px;font-size:12px">${r.text}</td>
     <td style="font-size:11px">${r.date}</td>
     <td><div class="tda">
@@ -1161,77 +1510,106 @@ function renderReviews(){
   </tr>`).join('');
 }
 
-// ── Settings ──────────────────────────────────────────────────
-function loadSettingsUI(){
-  const s=appCfg;
-  const f=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
-  f('ss-name',s.storeName);f('ss-email',s.storeEmail);f('ss-phone',s.storePhone);
-  f('ss-addr',s.storeAddress);f('ss-tag',s.tagline);
-  f('ss-upi',s.upiId);f('ss-upiname',s.upiName||'Prince Enterprise');
-  f('ss-freemin',s.freeDeliveryThreshold||500);f('ss-dcharge',s.deliveryCharge||50);
-  f('ss-dtime',s.deliveryTime||'3-5 business days');
-  f('ss-gst',s.gstRate||18);f('ss-maxdisc',s.maxDiscount||60);
-  f('ss-alertemail',s.alertEmail);
-  const togs={cod:'tog-cod',upi:'tog-upi',reg:'tog-reg',flash:'tog-flash',maint:'tog-maint',rev:'tog-rev',email:'tog-email',stock:'tog-stock'};
-  Object.entries(togs).forEach(([k,id])=>{const el=document.getElementById(id);if(el){el.classList.toggle('on',s[k+'Enabled']!==false);}});
+// ── Settings ──────────────────────────────────────────────────────────
+function loadSettingsUI() {
+  const s = appCfg;
+  const f = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+  
+  f('ss-name', s.storeName); f('ss-email', s.storeEmail); f('ss-phone', s.storePhone);
+  f('ss-addr', s.storeAddress); f('ss-tag', s.tagline);
+  f('ss-upi', s.upiId); f('ss-upiname', s.upiName || 'Prince Enterprise');
+  f('ss-freemin', s.freeDeliveryThreshold || 500); f('ss-dcharge', s.deliveryCharge || 50);
+  f('ss-dtime', s.deliveryTime || '3-5 business days');
+  f('ss-gst', s.gstRate || 18); f('ss-maxdisc', s.maxDiscount || 60);
+  f('ss-alertemail', s.alertEmail);
+  
+  const togs = {cod:'tog-cod', upi:'tog-upi', reg:'tog-reg', flash:'tog-flash', maint:'tog-maint', rev:'tog-rev', email:'tog-email', stock:'tog-stock'};
+  Object.entries(togs).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('on', s[k + 'Enabled'] !== false);
+  });
 }
 
-async function saveSettings(){
-  const g=(id)=>{const el=document.getElementById(id);return el?el.value:'';};
-  const t=(id)=>{const el=document.getElementById(id);return el?el.classList.contains('on'):true;};
-  const cfg={
-    storeName:g('ss-name'),storeEmail:g('ss-email'),storePhone:g('ss-phone'),
-    storeAddress:g('ss-addr'),tagline:g('ss-tag'),
-    upiId:g('ss-upi'),upiName:g('ss-upiname'),
-    freeDeliveryThreshold:+g('ss-freemin')||500,deliveryCharge:+g('ss-dcharge')||50,deliveryTime:g('ss-dtime'),
-    gstRate:+g('ss-gst')||18,maxDiscount:+g('ss-maxdisc')||60,alertEmail:g('ss-alertemail'),
-    codEnabled:t('tog-cod'),upiEnabled:t('tog-upi'),regEnabled:t('tog-reg'),flashEnabled:t('tog-flash'),maintEnabled:t('tog-maint'),revEnabled:t('tog-rev'),emailEnabled:t('tog-email'),stockEnabled:t('tog-stock'),
-    updatedAt:Date.now()
+async function saveSettings() {
+  const g = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const t = (id) => { const el = document.getElementById(id); return el ? el.classList.contains('on') : true; };
+  
+  const cfg = {
+    storeName: g('ss-name'), storeEmail: g('ss-email'), storePhone: g('ss-phone'),
+    storeAddress: g('ss-addr'), tagline: g('ss-tag'),
+    upiId: g('ss-upi'), upiName: g('ss-upiname'),
+    freeDeliveryThreshold: +g('ss-freemin') || 500, deliveryCharge: +g('ss-dcharge') || 50, deliveryTime: g('ss-dtime'),
+    gstRate: +g('ss-gst') || 18, maxDiscount: +g('ss-maxdisc') || 60, alertEmail: g('ss-alertemail'),
+    codEnabled: t('tog-cod'), upiEnabled: t('tog-upi'), regEnabled: t('tog-reg'), flashEnabled: t('tog-flash'),
+    maintEnabled: t('tog-maint'), revEnabled: t('tog-rev'), emailEnabled: t('tog-email'), stockEnabled: t('tog-stock'),
+    updatedAt: Date.now()
   };
+  
   await db.ref('appSettings').set(cfg);
-  appCfg=cfg;showToast('✅ Settings saved successfully!');
+  appCfg = cfg;
+  showToast('✅ Settings saved successfully!');
 }
 
-function previewQR(){
-  const upi=document.getElementById('ss-upi').value.trim()||'princeenterprise@upi';
-  const qrDiv=document.getElementById('settingsQR');
-  qrDiv.innerHTML='';
-  if(window.QRCode){new QRCode(qrDiv,{text:`upi://pay?pa=${upi}&pn=Prince+Enterprise&cu=INR`,width:120,height:120});}
-  else showToast('QR: '+upi);
+function previewQR() {
+  const upi = document.getElementById('ss-upi').value.trim() || 'princeenterprise@upi';
+  const qrDiv = document.getElementById('settingsQR');
+  qrDiv.innerHTML = '';
+  
+  if (window.QRCode) {
+    new QRCode(qrDiv, {text: `upi://pay?pa=${upi}&pn=Prince+Enterprise&cu=INR`, width: 120, height: 120});
+  } else {
+    showToast('QR: ' + upi);
+  }
 }
 
-// ── Misc / Modal / Utils ──────────────────────────────────────
-function openModal(title,body,foot=''){
-  document.getElementById('mTitle').textContent=title;
-  document.getElementById('mBody').innerHTML=body;
-  document.getElementById('mFoot').innerHTML=foot;
+// ── Misc / Modal / Utils ──────────────────────────────────────────────
+function openModal(title, body, foot = '') {
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mBody').innerHTML = body;
+  document.getElementById('mFoot').innerHTML = foot;
   document.getElementById('modalWrap').classList.remove('hidden');
 }
-function closeModal(){document.getElementById('modalWrap').classList.add('hidden');}
 
-function showToast(msg,dur=2600){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),dur);
+function closeModal() {
+  document.getElementById('modalWrap').classList.add('hidden');
 }
 
-function exportCSV(){showToast('CSV exported! (demo — implement server-side for production)');}
+function showToast(msg, dur = 2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
 
-function initDarkMode(){
-  isDark=localStorage.getItem('pe_admin_dark')==='1';applyDark();
+function exportCSV() {
+  showToast('CSV exported! (demo — implement server-side for production)');
 }
-function toggleDark(){
-  isDark=!isDark;localStorage.setItem('pe_admin_dark',isDark?'1':'0');applyDark();
+
+function initDarkMode() {
+  isDark = localStorage.getItem('pe_admin_dark') === '1';
+  applyDark();
 }
-function applyDark(){
-  document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
-  const tog=document.getElementById('darkTog');if(tog)tog.classList.toggle('on',isDark);
-  const ico=document.getElementById('darkIco');if(ico)ico.className='fas fa-'+(isDark?'sun':'moon');
+
+function toggleDark() {
+  isDark = !isDark;
+  localStorage.setItem('pe_admin_dark', isDark ? '1' : '0');
+  applyDark();
+}
+
+function applyDark() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const tog = document.getElementById('darkTog');
+  if (tog) tog.classList.toggle('on', isDark);
+  const ico = document.getElementById('darkIco');
+  if (ico) ico.className = 'fas fa-' + (isDark ? 'sun' : 'moon');
 }
 
 // Close sidebar on outside click (mobile)
-document.addEventListener('click',e=>{
-  const sb=document.getElementById('sidebar');
-  if(sb&&window.innerWidth<=768&&!sb.contains(e.target)&&!e.target.closest('.mbtn'))sb.classList.remove('sbshow');
+document.addEventListener('click', e => {
+  const sb = document.getElementById('sidebar');
+  if (sb && window.innerWidth <= 768 && !sb.contains(e.target) && !e.target.closest('.mbtn')) {
+    sb.classList.remove('sbshow');
+  }
 });
 </script>
 </body>
