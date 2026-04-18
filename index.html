@@ -710,9 +710,6 @@ function nav(pg){
   if(pg==='payments')renderPayments();
   if(pg==='reports')renderReports();
   if(pg==='tracking')renderTracking();
-  if(pg==='customers'){renderCustomers();}
-  if(pg==='orders'){renderOrders();}
-  if(pg==='inventory'){renderInventory();}
 }
 
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('sbshow');}
@@ -987,7 +984,6 @@ function renderCustomers(){
       <td><div class="tda">
         <div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
         <div class="ab ab-b" onclick="viewCust('${u.id}')" title="View"><i class="fas fa-eye"></i></div>
-        <div class="ab ab-pu" onclick="makeAdmin('${u.id}','${(u.name||'Customer').replace(/'/g,'')}')" title="Make Admin" style="background:#f3e5f5;color:#7b1fa2"><i class="fas fa-user-shield"></i></div>
         <div class="ab ab-r" onclick="delCust('${u.id}')" title="Remove"><i class="fas fa-trash"></i></div>
       </div></td>
     </tr>`;
@@ -999,7 +995,7 @@ function viewCust(uid){
   const ords=allOrders.filter(o=>o.userId===uid||o.userEmail===u.email);
   openModal(u.name||'Customer',`<div style="font-size:13px">
     ${[['Name',u.name||'—'],['Email',u.email||'—'],['Phone',u.phone||'—'],['Address',u.address||'—'],['Orders',ords.length],['Total Spent','₹'+ords.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN')],['Joined',u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
-  </div>`,`<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone||''}','${u.name||''}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-sm" style="background:#f3e5f5;color:#7b1fa2" onclick="closeModal();makeAdmin('${uid}','${(u.name||'Customer').replace(/'/g,'')}')"><i class="fas fa-user-shield"></i> Make Admin</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
+  </div>`,`<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone||''}','${u.name||''}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
 }
 
 function openAddCust(){
@@ -1024,20 +1020,6 @@ async function delCust(uid){
   if(!confirm('Remove this customer?'))return;
   await db.ref('users/'+uid).remove();
   allCusts=allCusts.filter(x=>x.id!==uid);renderCustomers();showToast('Customer removed');
-}
-
-async function makeAdmin(uid, name){
-  if(!confirm(`Grant admin access to ${name}?\n\nThis will allow them to log in to this admin panel with full control.`))return;
-  try{
-    await db.ref('users/'+uid+'/role').set('admin');
-    allCusts=allCusts.filter(x=>x.id!==uid);
-    renderCustomers();
-    renderDashboard();
-    showToast(`✅ ${name} is now an admin!`);
-  } catch(e){
-    showToast('Failed to update role. Check permissions.');
-    console.error(e);
-  }
 }
 
 function waCustomer(phone,name){
