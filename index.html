@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--p:#2874f0;--pd:#1565c0;--pl:#e8f0fd;--s:#fb641b;--g:#26a541;--r:#ff4141;--w:#f9a825;--pu:#7b1fa2;--bg:#f0f2f5;--c:#fff;--c2:#f8f9fa;--t:#212121;--t2:#535766;--m:#878787;--b:#e0e0e0;--d:#f0f0f0;--sb:235px;--sh:0 1px 4px rgba(0,0,0,.08);--sh2:0 2px 12px rgba(0,0,0,.13);--sh3:0 8px 32px rgba(0,0,0,.15);--rd:10px;--tr:all .25s ease}
 [data-theme=dark]{--bg:#0e0e1a;--c:#17172b;--c2:#1e1e32;--t:#e8eaf6;--t2:#b0bec5;--m:#78909c;--b:#2a2a44;--d:#1e1e36}
@@ -188,11 +187,6 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 
 /* RESPONSIVE */
 @media(max-width:768px){#sidebar{transform:translateX(-100%)}.sbshow{transform:translateX(0)!important}#admain{margin-left:0}.mbtn{display:flex}.g2,.g3{grid-template-columns:1fr}.sr{flex-direction:column}.src{min-width:0;width:100%}table{display:block;overflow-x:auto}}
-
-/* Admin extra */
-.badge-new{animation:badgePulse .6s ease 3}
-@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
-
 </style>
 </head>
 <body>
@@ -219,7 +213,7 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sb-top">
-      <div class="sb-ico"><i class="fas fa-lightbulb"></i></div>
+      <div class="sb-ico"><i class="fas fa-bolt"></i></div>
       <h2>Prince Enterprise</h2>
       <p>Admin Dashboard v2.0</p>
       <span class="sb-live">LIVE</span>
@@ -256,13 +250,6 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
       <div class="sbsec">System</div>
       <div class="smi" id="smi-reviews" onclick="nav('reviews')"><i class="fas fa-star"></i><span class="snm">Reviews</span></div>
       <div class="smi" id="smi-settings" onclick="nav('settings')"><i class="fas fa-cog"></i><span class="snm">App Settings</span></div>
-      <div class="sbsep"></div>
-      <div class="sbsec">Advanced</div>
-      <div class="smi" id="smi-analytics" onclick="nav('analytics')"><i class="fas fa-chart-line"></i><span class="snm">Analytics</span></div>
-      <div class="smi" id="smi-bulk" onclick="nav('bulk')"><i class="fas fa-boxes"></i><span class="snm">Bulk Orders</span></div>
-      <div class="smi" id="smi-loyalty" onclick="nav('loyalty')"><i class="fas fa-star"></i><span class="snm">Loyalty Program</span></div>
-      <div class="smi" id="smi-refunds" onclick="nav('refunds')"><i class="fas fa-undo"></i><span class="snm">Refunds</span></div>
-      <div class="smi" id="smi-pricealerts" onclick="nav('pricealerts')"><i class="fas fa-bell"></i><span class="snm">Price Alerts</span></div>
     </nav>
 
     <div class="sb-foot">
@@ -518,63 +505,6 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
         </div>
       </div>
 
-
-      <!-- ANALYTICS DEEP DIVE -->
-      <div id="vAnalytics" class="view">
-        <div class="sechd"><h2>Advanced Analytics</h2><button class="btn btn-p btn-sm" onclick="exportCSV()"><i class="fas fa-download"></i> Export</button></div>
-        <div class="g3" id="analyticsStats" style="margin-bottom:14px"></div>
-        <div class="g2" style="margin-bottom:14px">
-          <div class="card cp">
-            <div class="sechd" style="margin-bottom:8px"><h2>Revenue by Day (Last 30d)</h2></div>
-            <div id="analyticsChart" style="display:flex;align-items:flex-end;gap:2px;height:100px"></div>
-          </div>
-          <div class="card cp">
-            <div class="sechd" style="margin-bottom:8px"><h2>Payment Method Split</h2></div>
-            <div id="paymentSplit"></div>
-          </div>
-        </div>
-        <div class="g2">
-          <div class="card cp"><div class="sechd" style="margin-bottom:8px"><h2>Peak Order Hours</h2></div><div id="peakHours"></div></div>
-          <div class="card cp"><div class="sechd" style="margin-bottom:8px"><h2>Customer Retention</h2></div><div id="retentionStats"></div></div>
-        </div>
-      </div>
-
-      <!-- BULK ORDERS MANAGER -->
-      <div id="vBulk" class="view">
-        <div class="sechd"><h2>Bulk Order Enquiries</h2></div>
-        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Qty</th><th>Phone</th><th>User</th><th>Time</th><th>Actions</th></tr></thead><tbody id="bulkBody"></tbody></table></div></div>
-      </div>
-
-      <!-- LOYALTY PROGRAM MANAGER -->
-      <div id="vLoyalty" class="view">
-        <div class="sechd"><h2>Loyalty Program</h2><button class="btn btn-p btn-sm" onclick="openLoyaltySettings()"><i class="fas fa-cog"></i> Settings</button></div>
-        <div class="g3" style="margin-bottom:14px" id="loyaltyStats"></div>
-        <div class="card">
-          <div class="cp" style="border-bottom:1px solid var(--d)"><div class="sechd" style="margin:0"><h2>Top Points Earners</h2></div></div>
-          <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Customer</th><th>Points</th><th>Spent</th><th>Action</th></tr></thead><tbody id="loyaltyBody"></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- REFUNDS MANAGER -->
-      <div id="vRefunds" class="view">
-        <div class="sechd"><h2>Refunds & Returns</h2></div>
-        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody id="refundsBody"></tbody></table></div></div>
-      </div>
-
-      <!-- PRICE ALERTS -->
-      <div id="vPricealerts" class="view">
-        <div class="sechd"><h2>Customer Price Alerts</h2></div>
-        <div class="card cp" style="margin-bottom:14px">
-          <h3 style="font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;margin-bottom:10px">Price Drop Notification Tool</h3>
-          <p style="font-size:12.5px;color:var(--m);margin-bottom:12px">When you reduce a product's price, customers who set alerts will be notified.</p>
-          <div style="display:flex;gap:9px;flex-wrap:wrap">
-            <select id="alertProdSel" class="fc" style="flex:1;padding:9px;border:1.5px solid var(--b);border-radius:8px;font-size:13px;background:var(--c);color:var(--t)" id="alertProdSel"></select>
-            <button class="btn btn-o btn-sm" onclick="sendPriceDropAlert()"><i class="fas fa-bell"></i> Notify Customers</button>
-          </div>
-        </div>
-        <div class="twrap"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Customer</th><th>Alert Price</th><th>Current Price</th><th>Status</th></tr></thead><tbody id="alertsBody"></tbody></table></div></div>
-      </div>
-
     </div><!-- /cont -->
   </main>
 </div><!-- /adminApp -->
@@ -595,11 +525,6 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 
 <script>
 // ── Firebase ────────────────────────────────────────────────
-if(typeof firebase === 'undefined'){
-  document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5';
-  document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0">Prince Enterprise Admin</h2><p style="color:#666">Firebase failed to load. Please check internet connection.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">Retry</button>';
-  throw new Error('Firebase not loaded');
-}
 const fbCfg={apiKey:"AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",authDomain:"honest-talk-5b839.firebaseapp.com",databaseURL:"https://honest-talk-5b839-default-rtdb.firebaseio.com",projectId:"honest-talk-5b839",storageBucket:"honest-talk-5b839.firebasestorage.app",messagingSenderId:"479110931464",appId:"1:479110931464:web:37bc3a606b8160bae9ddbd"};
 firebase.initializeApp(fbCfg);
 const auth=firebase.auth(), db=firebase.database();
@@ -1308,360 +1233,6 @@ document.addEventListener('click',e=>{
   const sb=document.getElementById('sidebar');
   if(sb&&window.innerWidth<=768&&!sb.contains(e.target)&&!e.target.closest('.mbtn'))sb.classList.remove('sbshow');
 });
-
-// ══════════════════════════════════════════════════════════════════
-// 10 NEW ADMIN FEATURES
-// ══════════════════════════════════════════════════════════════════
-
-// ─── Update viewTitles ───────────────────────────────────────────
-Object.assign(viewTitles,{analytics:'Advanced Analytics',bulk:'Bulk Order Enquiries',loyalty:'Loyalty Program',refunds:'Refunds & Returns',pricealerts:'Price Alerts'});
-
-// ─── 1. ADVANCED ANALYTICS ───────────────────────────────────────
-function renderAnalytics(){
-  const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
-  const avg=allOrders.length?Math.round(total/allOrders.length):0;
-  const upiOrds=allOrders.filter(o=>o.paymentMethod==='UPI');
-  const codOrds=allOrders.filter(o=>o.paymentMethod==='COD');
-  document.getElementById('analyticsStats').innerHTML=`
-    <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-chart-line"></i></div><div class="sc-val">₹${avg}</div><div class="sc-lbl">Avg Order Value</div></div>
-    <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-percent"></i></div><div class="sc-val">${allOrders.length?Math.round(allOrders.filter(o=>o.status==='Delivered').length/allOrders.length*100):0}%</div><div class="sc-lbl">Fulfillment Rate</div></div>
-    <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-repeat"></i></div><div class="sc-val">${allCusts.length?Math.round(allOrders.filter(o=>allOrders.filter(x=>x.userEmail===o.userEmail).length>1).length/allOrders.length*100):0}%</div><div class="sc-lbl">Repeat Customers</div></div>
-  `;
-  // 30 day chart
-  const days=30, daily=Array.from({length:days},(_,i)=>{
-    const d=new Date(); d.setDate(d.getDate()-i);
-    const ds=d.toDateString();
-    return allOrders.filter(o=>new Date(o.createdAt||0).toDateString()===ds).reduce((s,o)=>s+(o.total||0),0);
-  }).reverse();
-  const mx=Math.max(...daily,1);
-  document.getElementById('analyticsChart').innerHTML=daily.map(v=>`<div style="flex:1;height:${Math.round(v/mx*100)}%;background:linear-gradient(to top,var(--p),var(--pl));border-radius:2px 2px 0 0;min-width:6px;min-height:2px" title="₹${v}"></div>`).join('');
-  // Payment split
-  const upiRev=upiOrds.reduce((s,o)=>s+(o.total||0),0);
-  const codRev=codOrds.reduce((s,o)=>s+(o.total||0),0);
-  const tot=upiRev+codRev||1;
-  document.getElementById('paymentSplit').innerHTML=`
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span>UPI Payments</span><strong>₹${upiRev.toLocaleString('en-IN')}</strong></div>
-      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(upiRev/tot*100)}%;background:var(--p);border-radius:4px;transition:width .8s ease"></div></div>
-    </div>
-    <div>
-      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span>Cash on Delivery</span><strong>₹${codRev.toLocaleString('en-IN')}</strong></div>
-      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(codRev/tot*100)}%;background:var(--g);border-radius:4px;transition:width .8s ease"></div></div>
-    </div>
-  `;
-  // Peak hours
-  const hours=Array(24).fill(0);
-  allOrders.forEach(o=>{ if(o.createdAt) hours[new Date(o.createdAt).getHours()]++; });
-  const peakMx=Math.max(...hours,1);
-  document.getElementById('peakHours').innerHTML=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px">`+hours.map((v,i)=>`<div style="flex:1;height:${Math.round(v/peakMx*100)}%;background:${v===Math.max(...hours)?'var(--s)':'var(--p)'};opacity:.8;border-radius:2px 2px 0 0;min-height:2px" title="${i}:00 — ${v} orders"></div>`).join('')+'</div><div style="font-size:10px;color:var(--m);margin-top:5px;text-align:center">0h ———————————— 23h</div>';
-  // Retention
-  const repeat=allCusts.filter(u=>allOrders.filter(o=>o.userEmail===u.email).length>1).length;
-  document.getElementById('retentionStats').innerHTML=`
-    <div style="font-size:28px;font-weight:900;font-family:'Exo 2',sans-serif;color:var(--p)">${repeat}</div>
-    <div style="font-size:12px;color:var(--m);margin-bottom:12px">Repeat customers</div>
-    ${[['New Customers',allCusts.length-repeat,'p-b'],['Returning',repeat,'p-g'],['Inactive (30d)',Math.floor(allCusts.length*.15),'p-gr']].map(([k,v,c])=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--d)"><span>${k}</span><span class="pill ${c}">${v}</span></div>`).join('')}
-  `;
-}
-
-// ─── 2. BULK ORDERS ──────────────────────────────────────────────
-async function renderBulk(){
-  const snap = await db.ref('bulkOrders').orderByChild('time').limitToLast(30).get();
-  const list = snap.val()?Object.entries(snap.val()).map(([id,b])=>({id,...b})).reverse():[];
-  const el = document.getElementById('bulkBody');if(!el)return;
-  el.innerHTML = list.map(b=>`<tr>
-    <td><strong>${b.prod||'—'}</strong></td>
-    <td>${b.qty||'—'}</td>
-    <td>${b.phone||'—'}</td>
-    <td style="font-size:12px">${b.userId||'—'}</td>
-    <td style="font-size:11px">${b.time?new Date(b.time).toLocaleDateString('en-IN'):'—'}</td>
-    <td><div class="tda">
-      <div class="ab ab-wa" onclick="window.open('https://wa.me/${(b.phone||'').replace(/\D/g,'')}?text='+encodeURIComponent('Hi! Regarding your bulk order enquiry for ${b.prod||'LED products'} (Qty: ${b.qty||'—'}) from Prince Enterprise. We have special pricing available!'),'_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
-      <div class="ab ab-r" onclick="db.ref('bulkOrders/${b.id}').remove();showToast('Removed');renderBulk()" title="Remove"><i class="fas fa-trash"></i></div>
-    </div></td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No bulk enquiries yet</td></tr>';
-}
-
-// ─── 3. LOYALTY PROGRAM ──────────────────────────────────────────
-function renderLoyalty(){
-  document.getElementById('loyaltyStats').innerHTML=`
-    <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-star"></i></div><div class="sc-val">${allCusts.length*40}</div><div class="sc-lbl">Total Points Issued</div></div>
-    <div class="scard sc-b"><div class="sc-ico" style="background:var(--p)"><i class="fas fa-users"></i></div><div class="sc-val">${Math.floor(allCusts.length*.6)}</div><div class="sc-lbl">Active Members</div></div>
-    <div class="scard sc-g"><div class="sc-ico" style="background:var(--g)"><i class="fas fa-rupee-sign"></i></div><div class="sc-val">₹${allCusts.length*40*0.1|0}</div><div class="sc-lbl">Points Redeemed Value</div></div>
-  `;
-  document.getElementById('loyaltyBody').innerHTML=allCusts.slice(0,10).map((u,i)=>{
-    const pts=(i+1)*40+Math.floor(Math.random()*100);
-    return`<tr>
-      <td><strong>${u.name||'—'}</strong><br><span style="font-size:11px;color:var(--m)">${u.email||''}</span></td>
-      <td><strong style="color:#f57c00">${pts}</strong> pts</td>
-      <td>₹${(allOrders.filter(o=>o.userEmail===u.email).reduce((s,o)=>s+(o.total||0),0)).toLocaleString('en-IN')}</td>
-      <td><div class="ab ab-o" onclick="grantPoints('${u.id}','${u.name||'Customer'}')"><i class="fas fa-plus"></i></div></td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No loyalty data</td></tr>';
-}
-
-function grantPoints(uid, name){
-  openModal('Grant Bonus Points to '+name,`
-    <div class="fg"><label>Points to Grant</label><input class="fc" id="grantPts" type="number" placeholder="50" value="50"></div>
-    <div class="fg"><label>Reason</label><input class="fc" id="grantReason" placeholder="e.g. Birthday bonus, Manual adjustment"></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
-   <button class="btn btn-o" onclick="(async()=>{const pts=+document.getElementById('grantPts').value||0;const reason=document.getElementById('grantReason').value;await db.ref('loyalty/${uid}/points').transaction(v=>(v||0)+pts);closeModal();showToast('Granted '+pts+' points to ${name}')})()"><i class="fas fa-star"></i> Grant Points</button>`);
-}
-
-function openLoyaltySettings(){
-  openModal('Loyalty Program Settings',`
-    <div class="fg"><label>Points per ₹100 spent</label><input class="fc" id="lp-rate" value="10" type="number"></div>
-    <div class="fg"><label>Redemption rate (pts to ₹)</label><input class="fc" id="lp-redeem" value="10" type="number"></div>
-    <div class="fg"><label>Min points to redeem</label><input class="fc" id="lp-min" value="50" type="number"></div>
-    <div class="fg"><label>Referral bonus (pts)</label><input class="fc" id="lp-ref" value="50" type="number"></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
-   <button class="btn btn-p" onclick="(async()=>{await db.ref('loyaltySettings').set({ratePerHundred:+document.getElementById('lp-rate').value,redeemRate:+document.getElementById('lp-redeem').value,minRedeem:+document.getElementById('lp-min').value,referralBonus:+document.getElementById('lp-ref').value});closeModal();showToast('Loyalty settings saved!')})()"><i class="fas fa-save"></i> Save</button>`);
-}
-
-// ─── 4. REFUNDS MANAGER ──────────────────────────────────────────
-function renderRefunds(){
-  const cancelled = allOrders.filter(o=>o.status==='Cancelled');
-  const el = document.getElementById('refundsBody');if(!el)return;
-  el.innerHTML = cancelled.map(o=>`<tr>
-    <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
-    <td><strong>₹${o.total||0}</strong></td>
-    <td style="font-size:12px">${o.cancelReason||'Customer cancelled'}</td>
-    <td><span class="pill ${o.refundStatus==='Processed'?'p-g':o.refundStatus==='Pending'?'p-o':'p-gr'}">${o.refundStatus||'Pending'}</span></td>
-    <td><div class="tda">
-      <div class="ab ab-g" onclick="processRefund('${o.orderId||o.id}')" title="Process"><i class="fas fa-check"></i></div>
-      <div class="ab ab-wa" onclick="waOrder('${o.userEmail||''}','${o.orderId||o.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
-    </div></td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No refund requests</td></tr>';
-}
-
-async function processRefund(ordId){
-  if(!confirm('Mark refund as processed for order '+ordId+'?'))return;
-  await db.ref('orders/'+ordId+'/refundStatus').set('Processed');
-  showToast('Refund marked as processed');
-  renderRefunds();
-}
-
-// ─── 5. PRICE ALERTS ─────────────────────────────────────────────
-async function renderPriceAlerts(){
-  // Populate product selector
-  const sel = document.getElementById('alertProdSel');
-  if(sel) sel.innerHTML = allProds.map(p=>`<option value="${p.id}">${p.name} — ₹${p.price}</option>`).join('');
-  // Load alerts
-  const snap = await db.ref('priceAlerts').get();
-  const alerts = [];
-  if(snap.val()){
-    Object.entries(snap.val()).forEach(([uid,userAlerts])=>{
-      Object.values(userAlerts).forEach(a=>alerts.push({...a,uid}));
-    });
-  }
-  const el = document.getElementById('alertsBody');if(!el)return;
-  el.innerHTML = alerts.map(a=>{
-    const p = allProds.find(x=>x.id===a.pid);
-    const dropped = p && p.price < a.price;
-    return`<tr>
-      <td>${p?p.name:'Unknown'}</td>
-      <td style="font-size:12px">${a.uid}</td>
-      <td>₹${a.price}</td>
-      <td><strong style="color:${dropped?'var(--g)':'var(--t)'}">₹${p?p.price:'—'}</strong></td>
-      <td><span class="pill ${dropped?'p-g':'p-b'}">${dropped?'Dropped!':'Watching'}</span></td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No price alerts set</td></tr>';
-}
-
-async function sendPriceDropAlert(){
-  const pid = document.getElementById('alertProdSel')?.value;
-  if(!pid){showToast('Select a product');return;}
-  const p = allProds.find(x=>x.id===pid);
-  if(!p){showToast('Product not found');return;}
-  // Send notification to all users who set alert for this product
-  const notifId='pd'+Date.now();
-  const notif={id:notifId,title:'Price Drop Alert! 🔥',desc:`${p.name} price dropped to ₹${p.price}!`,icon:'🔥',iconBg:'#fff3e0',iconColor:'#e65100',time:'Just now',unread:true,createdAt:Date.now()};
-  allCusts.forEach(u=>db.ref('notifications/'+u.id+'/'+notifId).set(notif));
-  await db.ref('notifHistory/'+notifId).set({...notif,recipients:allCusts.length});
-  showToast('Price drop alert sent to all customers!');
-}
-
-// ─── 6. PRODUCT QUICK EDIT (inline) ──────────────────────────────
-function quickEditPrice(pid){
-  const p = allProds.find(x=>x.id===pid); if(!p) return;
-  openModal('Quick Price Edit: '+p.name.substring(0,25),`
-    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
-      <img src="${p.image}" style="width:50px;height:50px;border-radius:8px;object-fit:cover">
-      <div><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:12px;color:var(--m)">Current: ₹${p.price} (was ₹${p.originalPrice})</div></div>
-    </div>
-    <div class="fg"><label>New Sale Price (₹)</label><input class="fc" id="qep" type="number" value="${p.price}"></div>
-    <div class="fg"><label>New Original Price (₹)</label><input class="fc" id="qeop" type="number" value="${p.originalPrice||p.price}"></div>
-    <div class="fg"><label>Flash Deal?</label><select class="fc" id="qeflash"><option value="true" ${p.isFlashDeal?'selected':''}>Yes - Show in Flash Deals</option><option value="false" ${!p.isFlashDeal?'selected':''}>No</option></select></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
-   <button class="btn btn-g" onclick="(async()=>{const np=+document.getElementById('qep').value;const nop=+document.getElementById('qeop').value;const fl=document.getElementById('qeflash').value==='true';const disc=nop?Math.round((1-np/nop)*100):0;await db.ref('products/${pid}').update({price:np,originalPrice:nop,discount:disc,isFlashDeal:fl,updatedAt:Date.now()});const i=allProds.findIndex(x=>x.id==='${pid}');if(i>-1)Object.assign(allProds[i],{price:np,originalPrice:nop,discount:disc,isFlashDeal:fl});closeModal();renderProducts();showToast('Price updated: ₹${p.price} → ₹'+np)})()"><i class="fas fa-save"></i> Update Price</button>`);
-}
-
-// ─── 7. ADMIN STATS EXPORT ───────────────────────────────────────
-function exportFullReport(){
-  const lines = [
-    'Prince Enterprise — Full Report',
-    'Generated: '+new Date().toLocaleString('en-IN'),
-    '',
-    '=== SUMMARY ===',
-    'Total Orders,'+allOrders.length,
-    'Total Revenue,₹'+allOrders.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN'),
-    'Total Customers,'+allCusts.length,
-    'Total Products,'+allProds.length,
-    '',
-    '=== ORDERS ===',
-    'Order ID,Customer,Total,Method,Status,Date',
-    ...allOrders.map(o=>[o.orderId,o.userEmail,o.total,o.paymentMethod,o.status,new Date(o.createdAt||0).toLocaleDateString('en-IN')].join(','))
-  ];
-  const blob = new Blob([lines.join('
-')], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'prince-enterprise-report-'+Date.now()+'.csv';
-  a.click();
-  showToast('Full report downloaded!');
-}
-
-// ─── 8. LIVE ORDER BELL ───────────────────────────────────────────
-let _lastOrderCount = 0;
-function initLiveOrderWatch(){
-  db.ref('orders').on('value', snap=>{
-    const newCount = snap.val()?Object.keys(snap.val()).length:0;
-    if(_lastOrderCount > 0 && newCount > _lastOrderCount){
-      const diff = newCount - _lastOrderCount;
-      showToast('🛒 '+diff+' new order'+(diff>1?'s':'')+' just came in!');
-      // Flash the badge
-      document.getElementById('hdrBadge')?.classList.add('badge-new');
-      setTimeout(()=>document.getElementById('hdrBadge')?.classList.remove('badge-new'),2000);
-    }
-    _lastOrderCount = newCount;
-  });
-}
-
-// ─── 9. PRODUCT STOCK HISTORY ─────────────────────────────────────
-function viewStockHistory(pid){
-  const p = allProds.find(x=>x.id===pid); if(!p) return;
-  openModal('Stock History: '+p.name.substring(0,25),`
-    <div style="text-align:center;padding:10px 0 18px">
-      <div style="font-size:36px;font-weight:900;font-family:'Exo 2',sans-serif;color:${p.stock>5?'var(--g)':p.stock>0?'var(--w)':'var(--r)'}">${p.stock||0}</div>
-      <div style="font-size:12px;color:var(--m)">Current stock</div>
-    </div>
-    <div style="display:flex;gap:10px;margin-bottom:14px">
-      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
-        <div style="font-size:18px;font-weight:800">₹${p.price}</div>
-        <div style="font-size:11px;color:var(--m)">Sale Price</div>
-      </div>
-      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
-        <div style="font-size:18px;font-weight:800">${p.discount||0}%</div>
-        <div style="font-size:11px;color:var(--m)">Discount</div>
-      </div>
-      <div style="flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:10px">
-        <div style="font-size:18px;font-weight:800">${p.reviews||0}</div>
-        <div style="font-size:11px;color:var(--m)">Reviews</div>
-      </div>
-    </div>
-    <div class="fg"><label>Update Stock Now</label><div style="display:flex;gap:8px"><input class="fc" id="shStock" type="number" value="${p.stock||0}" style="flex:1"><button class="btn btn-g btn-sm" onclick="(async()=>{const v=+document.getElementById('shStock').value;await db.ref('products/${pid}/stock').set(v);const i=allProds.findIndex(x=>x.id==='${pid}');if(i>-1)allProds[i].stock=v;closeModal();renderInventory();showToast('Stock updated to '+v)})()">Save</button></div></div>
-  `,'',`<button class="btn btn-p btn-sm" onclick="quickEditPrice('${pid}');closeModal()"><i class="fas fa-tag"></i> Edit Price</button>`);
-}
-
-// ─── 10. SEND TARGETED NOTIFICATION ──────────────────────────────
-function openTargetedNotif(){
-  openModal('Send Targeted Notification',`
-    <div class="fg"><label>Target Group</label><select class="fc" id="tn-target">
-      <option value="all">All Customers (${allCusts.length})</option>
-      <option value="ordered">Customers with Orders</option>
-      <option value="new">New Customers (last 7d)</option>
-      <option value="inactive">Inactive (no order in 30d)</option>
-    </select></div>
-    <div class="fg"><label>Title</label><input class="fc" id="tn-title" placeholder="Notification title"></div>
-    <div class="fg"><label>Message</label><textarea class="fc" id="tn-msg" rows="3" placeholder="Message body…"></textarea></div>
-    <div class="fg"><label>Icon (emoji)</label><input class="fc" id="tn-ico" placeholder="🎁" style="max-width:80px"></div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
-   <button class="btn btn-p" onclick="sendTargetedNotif()"><i class="fas fa-paper-plane"></i> Send</button>`);
-}
-
-async function sendTargetedNotif(){
-  const target=document.getElementById('tn-target').value;
-  const title=document.getElementById('tn-title').value.trim();
-  const msg=document.getElementById('tn-msg').value.trim();
-  const ico=document.getElementById('tn-ico').value||'🔔';
-  if(!title||!msg){showToast('Title and message required');return;}
-  let targets=allCusts;
-  if(target==='ordered') targets=allCusts.filter(u=>allOrders.some(o=>o.userEmail===u.email));
-  if(target==='new') targets=allCusts.filter(u=>u.createdAt>(Date.now()-7*86400000));
-  const notifId='tn'+Date.now();
-  const notif={id:notifId,title,desc:msg,icon:ico,iconBg:'#e3f2fd',iconColor:'#1565c0',time:'Just now',unread:true,createdAt:Date.now()};
-  targets.forEach(u=>db.ref('notifications/'+u.id+'/'+notifId).set(notif));
-  await db.ref('notifHistory/'+notifId).set({...notif,recipients:targets.length,target});
-  closeModal();
-  showToast('Notification sent to '+targets.length+' customers!');
-}
-
-// ── Hook into nav for new views ───────────────────────────────────
-const _origAdminNav = nav;
-nav = function(pg){
-  _origAdminNav(pg);
-  if(pg==='analytics') renderAnalytics();
-  if(pg==='bulk') renderBulk();
-  if(pg==='loyalty') renderLoyalty();
-  if(pg==='refunds') renderRefunds();
-  if(pg==='pricealerts') renderPriceAlerts();
-};
-
-// Enhance products table with quick edit and stock buttons
-const _origRenderProds = renderProducts;
-renderProducts = function(){
-  _origRenderProds();
-  // Add quick price edit to each product row's action cell
-  document.querySelectorAll('#prodsBody tr').forEach(row=>{
-    const tdas = row.querySelector('.tda');
-    if(tdas){
-      const pid = tdas.querySelector('.ab-b')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-      if(pid){
-        const qBtn = document.createElement('div');
-        qBtn.className='ab ab-o';
-        qBtn.title='Quick Price Edit';
-        qBtn.innerHTML='<i class="fas fa-tag"></i>';
-        qBtn.onclick=()=>quickEditPrice(pid);
-        const stockBtn=document.createElement('div');
-        stockBtn.className='ab ab-pu';
-        stockBtn.title='Stock History';
-        stockBtn.innerHTML='<i class="fas fa-warehouse"></i>';
-        stockBtn.onclick=()=>viewStockHistory(pid);
-        tdas.appendChild(qBtn);
-        tdas.appendChild(stockBtn);
-      }
-    }
-  });
-};
-
-// Add targeted notif button to notifications view
-const _origNav2 = nav;
-
-// Add Targeted Notif button + Live order watch + Full report button
-setTimeout(()=>{
-  // Live order watch
-  initLiveOrderWatch();
-  // Add targeted notif btn
-  const ntSec = document.querySelector('#vNotifications .sechd');
-  if(ntSec && !document.getElementById('targetedNotifBtn')){
-    const btn = document.createElement('button');
-    btn.id='targetedNotifBtn';
-    btn.className='btn btn-pu btn-sm';
-    btn.innerHTML='<i class="fas fa-crosshairs"></i> Targeted';
-    btn.onclick=openTargetedNotif;
-    ntSec.appendChild(btn);
-  }
-  // Add full report export
-  const repSec = document.querySelector('#vReports .sechd');
-  if(repSec){
-    const btn2 = document.createElement('button');
-    btn2.className='btn btn-g btn-sm';
-    btn2.innerHTML='<i class="fas fa-file-csv"></i> Full Report';
-    btn2.onclick=exportFullReport;
-    repSec.appendChild(btn2);
-  }
-}, 1000);
-
 </script>
 </body>
 </html>
