@@ -716,27 +716,45 @@ async function loadAll(){
   appCfg=cs.val()||{upiId:'princeenterprise@upi',storeName:'Prince Enterprise',storePhone:'+919876543210',freeDeliveryThreshold:500,deliveryCharge:50};
   loadSettingsUI();
 
-  // Products
+  // Products - REALTIME listener
+  db.ref('products').on('value', snap=>{
+    if(snap.val()){
+      allProds=Object.entries(snap.val()).map(([id,p])=>({id,...p}));
+    } else {
+      allProds=defaultProds();
+      allProds.forEach(p=>db.ref('products/'+p.id).set(p));
+    }
+    renderProducts();
+    renderInventory();
+    renderCategories();
+    renderReports();
+  });
+  // Initial products load (so renderAll has data)
   const ps=await db.ref('products').get();
   allProds=ps.val()?Object.entries(ps.val()).map(([id,p])=>({id,...p})):defaultProds();
   if(!ps.val()) allProds.forEach(p=>db.ref('products/'+p.id).set(p));
 
-  // Customers -- realtime listener (auto-updates table)
+  // Customers - REALTIME listener
   db.ref('users').on('value', snap=>{
     allCusts=snap.val()?Object.entries(snap.val()).map(([id,u])=>({id,...u})).filter(u=>u.role!=='admin'):[];
     renderCustomers();
-    if(typeof renderWACustomers==='function') renderWACustomers();
+    renderWACustomers();
   });
-  // Initial sync load
   const us=await db.ref('users').get();
   allCusts=us.val()?Object.entries(us.val()).map(([id,u])=>({id,...u})).filter(u=>u.role!=='admin'):[];
 
-  // Coupons
+  // Coupons - REALTIME listener
+  db.ref('coupons').on('value', snap=>{
+    if(snap.val()){
+      allCoupons=Object.entries(snap.val()).map(([id,c])=>({id,...c}));
+      renderCoupons();
+    }
+  });
   const couS=await db.ref('coupons').get();
   allCoupons=couS.val()?Object.entries(couS.val()).map(([id,c])=>({id,...c})):[
     {id:'c1',code:'PRINCE10',discount:10,type:'percent',desc:'10% off all products',active:true,uses:45},
     {id:'c2',code:'LED20',discount:20,type:'percent',desc:'20% off LED strips',active:true,uses:12},
-    {id:'c3',code:'FLAT50',discount:50,type:'flat',desc:'₹50 off orders ₹500+',active:false,uses:7},
+    {id:'c3',code:'FLAT50',discount:50,type:'flat',desc:'Rs.50 off orders Rs.500+',active:false,uses:7},
     {id:'c4',code:'BULK15',discount:15,type:'percent',desc:'15% off bulk orders',active:true,uses:3},
   ];
 
@@ -774,7 +792,7 @@ function defaultProds(){
   return[{id:'p1',name:'Prince 9W LED Bulb Warm White',category:'Bulbs',price:79,originalPrice:149,discount:47,rating:4.5,reviews:128,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:50,isNew:true,isBestSeller:true},{id:'p2',name:'RGB LED Strip 5M with Remote',category:'Strip Lights',price:399,originalPrice:799,discount:50,rating:4.3,reviews:89,image:'https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=200',stock:30,isFlashDeal:true},{id:'p3',name:'Prince LED Panel Light 12W',category:'Panel Lights',price:299,originalPrice:550,discount:46,rating:4.6,reviews:214,image:'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=200',stock:45,isBestSeller:true},{id:'p4',name:'LED Street Light 30W Outdoor',category:'Outdoor',price:899,originalPrice:1599,discount:44,rating:4.4,reviews:67,image:'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=200',stock:20},{id:'p5',name:'Smart WiFi LED Bulb 9W RGB',category:'Smart Lights',price:549,originalPrice:999,discount:45,rating:4.7,reviews:156,image:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=200',stock:35,isNew:true},{id:'p6',name:'LED Tube Light 18W 4ft',category:'Tube Lights',price:199,originalPrice:350,discount:43,rating:4.2,reviews:98,image:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200',stock:60},{id:'p7',name:'LED Downlight 7W Recessed',category:'Downlights',price:149,originalPrice:280,discount:47,rating:4.4,reviews:175,image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200',stock:80},{id:'p8',name:'Solar LED Garden Light',category:'Outdoor',price:499,originalPrice:899,discount:44,rating:4.1,reviews:44,image:'https://images.unsplash.com/photo-1621600411688-4be93cd68504?w=200',stock:25}];
 }
 
-function renderAll(){renderDashboard();renderProducts();renderCustomers();renderCoupons();renderCategories();renderReviews();renderInventory();renderWATemplates();renderWACustomers();}
+function renderAll(){renderDashboard();renderProducts();renderCustomers();renderCoupons();renderCategories();renderBanners();renderReviews();renderInventory();renderWATemplates();renderWACustomers();}
 
 // -- Nav ------------------------------------------------------
 const viewTitles={dashboard:'Dashboard',orders:'All Orders',tracking:'Order Tracking',products:'Products',categories:'Categories',inventory:'Inventory',customers:'Customers',coupons:'Coupons & Discounts',notifications:'Push Notifications',whatsapp:'WhatsApp Messaging',banners:'Banners',payments:'Payments',reports:'Reports & Analytics',reviews:'Customer Reviews',settings:'App Settings'};
@@ -979,7 +997,7 @@ function openAddProduct(){
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pbest" style="accent-color:var(--p)"> Best Seller</label>
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pflash" style="accent-color:var(--p)"> Flash Deal</label>
     </div>
-  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
+  `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" id="prodSaveBtn" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
 }
 
 // -- Image Upload Helpers -------------------------------------
@@ -1053,8 +1071,15 @@ async function saveNewProd(){
   const imgVal=_imgBase64||document.getElementById('pi').value||'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED';
   const p={id,name,category:document.getElementById('pc').value,price,originalPrice:orig,discount:orig?Math.round((1-price/orig)*100):0,stock:+document.getElementById('pst').value||0,wattage:document.getElementById('pw').value,voltage:document.getElementById('pv').value,color:document.getElementById('pct').value,warranty:document.getElementById('pwa').value,image:imgVal,description:document.getElementById('pd').value,isNew:document.getElementById('pnew').checked,isBestSeller:document.getElementById('pbest').checked,isFlashDeal:document.getElementById('pflash').checked,rating:4.0,reviews:0,createdAt:Date.now()};
   _imgBase64=null;
-  await db.ref('products/'+id).set(p);
-  allProds.unshift(p);closeModal();renderProducts();showToast('Product "'+name+'" added!');
+  const saveBtn=document.getElementById('prodSaveBtn');
+  if(saveBtn){saveBtn.innerHTML='<div class="spin"></div>';saveBtn.disabled=true;}
+  try{
+    await db.ref('products/'+id).set(p);
+    closeModal();showToast('Product added!');
+  }catch(e){
+    showToast('Error: '+e.message);
+    if(saveBtn){saveBtn.innerHTML='<i class="fas fa-save"></i> Save Product';saveBtn.disabled=false;}
+  }
 }
 
 function editProd(pid){
@@ -1062,9 +1087,10 @@ function editProd(pid){
   openModal('Edit: '+p.name.substring(0,30),`
     <div class="fg"><label>Name</label><input class="fc" id="epn" value="${p.name||''}"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label>Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price||0}"></div>
-      <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock||0}"></div>
+      <div class="fg"><label>Sale Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price||0}"></div>
+      <div class="fg"><label>Original Price (₹)</label><input class="fc" id="epop" type="number" value="${p.originalPrice||p.price||0}"></div>
     </div>
+    <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock||0}"></div>
     <div class="fg"><label>Product Image</label>
       <div id="eImgBox" style="border:2px dashed var(--b);border-radius:var(--rd);padding:10px;text-align:center;cursor:pointer;transition:var(--tr)" onclick="document.getElementById('eImgFileIn').click()">
         <img id="eImgPreview" src="${p.image||''}" style="max-height:100px;max-width:100%;border-radius:6px;margin:0 auto 6px;display:${p.image?'block':'none'}">
@@ -1091,11 +1117,32 @@ function editProd(pid){
 
 async function saveEditProd(pid){
   const imgVal=_eImgBase64||document.getElementById('epi').value;
-  const u={name:document.getElementById('epn').value,price:+document.getElementById('epp').value,stock:+document.getElementById('epst').value,image:imgVal,description:document.getElementById('epd').value,isNew:document.getElementById('epnew').checked,isBestSeller:document.getElementById('epbest').checked,isFlashDeal:document.getElementById('epflash').checked};
+  const price=+document.getElementById('epp').value||0;
+  const orig=+document.getElementById('epop')?+document.getElementById('epop').value||0:0;
+  const discount=orig&&price?Math.round((1-price/orig)*100):0;
+  const u={
+    name:document.getElementById('epn').value,
+    price,
+    originalPrice:orig||price,
+    discount,
+    stock:+document.getElementById('epst').value||0,
+    image:imgVal,
+    description:document.getElementById('epd').value,
+    isNew:document.getElementById('epnew').checked,
+    isBestSeller:document.getElementById('epbest').checked,
+    isFlashDeal:document.getElementById('epflash').checked,
+    updatedAt:Date.now()
+  };
   _eImgBase64=null;
-  await db.ref('products/'+pid).update(u);
-  const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
-  closeModal();renderProducts();showToast('Product updated!');
+  const btn=event?.target;if(btn){btn.innerHTML='<div class="spin"></div>';btn.disabled=true;}
+  try{
+    await db.ref('products/'+pid).update(u);
+    const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
+    closeModal();showToast('Product updated!');
+  }catch(e){
+    showToast('Save failed: '+e.message);
+    if(btn){btn.innerHTML='<i class="fas fa-save"></i> Save';btn.disabled=false;}
+  }
 }
 
 async function delProd(pid){
