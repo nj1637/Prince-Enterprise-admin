@@ -658,9 +658,10 @@ async function adminLogin(){
       btn.innerHTML='<span>Login to Dashboard</span>';
       return;
     }
-    // Auto-set role in DB if missing
+    // Auto-set role in DB — always ensure admin email users get admin role
     if(roleSnap.val()!=='admin'){
       await db.ref('users/'+cred.user.uid+'/role').set('admin');
+      console.log('Role set to admin for:', email);
     }
   }catch(e){
     let msg=e.message.replace('Firebase:','').replace(/\(.*?\)/g,'').trim();
@@ -711,6 +712,14 @@ async function adminLogout(){await auth.signOut();location.reload();}
 
 // -- Load Data ------------------------------------------------
 async function loadAll(){
+  // Auto-fix admin role if needed (handles 'Customer' vs 'admin' mismatch)
+  if(adminUser && ADMIN_EMAILS.includes((adminUser.email||'').toLowerCase())){
+    const roleSnap = await db.ref('users/'+adminUser.uid+'/role').get();
+    if(roleSnap.val() !== 'admin'){
+      await db.ref('users/'+adminUser.uid+'/role').set('admin');
+      console.log('Auto-fixed admin role for', adminUser.email);
+    }
+  }
   // Settings
   const cs=await db.ref('appSettings').get();
   appCfg=cs.val()||{upiId:'princeenterprise@upi',storeName:'Prince Enterprise',storePhone:'+919876543210',freeDeliveryThreshold:500,deliveryCharge:50};
@@ -1077,8 +1086,13 @@ async function saveNewProd(){
     await db.ref('products/'+id).set(p);
     closeModal();showToast('Product added!');
   }catch(e){
-    showToast('Error: '+e.message);
+    let msg = e.message||'Unknown error';
+    if(msg.includes('PERMISSION_DENIED')||msg.includes('permission')){
+      msg = 'Permission denied! Fix Firebase Rules (see console for details). Your role must be "admin" in DB.';
+    }
+    showToast(msg, 5000);
     if(saveBtn){saveBtn.innerHTML='<i class="fas fa-save"></i> Save Product';saveBtn.disabled=false;}
+    console.error('Product save error:', e);
   }
 }
 
@@ -1140,8 +1154,15 @@ async function saveEditProd(pid){
     const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
     closeModal();showToast('Product updated!');
   }catch(e){
-    showToast('Save failed: '+e.message);
+    let msg=e.message||'Error';
+    if(msg.includes('PERMISSION_DENIED')||msg.includes('permission')){
+      msg='Permission denied! Check Firebase Rules — your DB role must be "admin".';
+      // Try to fix role automatically
+      if(adminUser) db.ref('users/'+adminUser.uid+'/role').set('admin').then(()=>showToast('Role fixed! Try saving again.'));
+    }
+    showToast(msg, 5000);
     if(btn){btn.innerHTML='<i class="fas fa-save"></i> Save';btn.disabled=false;}
+    console.error('Edit save error:',e);
   }
 }
 
