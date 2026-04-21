@@ -594,7 +594,7 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 <div id="toast"></div>
 
 <script>
-// ── Firebase ────────────────────────────────────────────────
+// -- Firebase ------------------------------------------------
 if(typeof firebase === 'undefined'){
   document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5';
   document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0">Prince Enterprise Admin</h2><p style="color:#666">Firebase failed to load. Please check internet connection.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">Retry</button>';
@@ -614,13 +614,13 @@ let auth, db;
   }
 })();
 
-// ── State ───────────────────────────────────────────────────
+// -- State ---------------------------------------------------
 let adminUser=null, allOrders=[], allProds=[], allCusts=[], allCoupons=[], appCfg={}, isDark=false;
 
-// ── Auth ────────────────────────────────────────────────────
+// -- Auth ----------------------------------------------------
 function togglePw(){const i=document.getElementById('aPass');const show=i.type==='password';i.type=show?'text':'password';document.getElementById('pwIco').className='fas fa-eye'+(show?'-slash':'');}
 
-// Admin emails list — add more admin emails here
+// Admin emails list -- add more admin emails here
 const ADMIN_EMAILS = [
   'nj966248@gmail.com',   // Primary admin
   // Add more admin emails below:
@@ -661,30 +661,47 @@ async function adminLogin(){
 
 function showErr(m){const e=document.getElementById('aErr');e.classList.remove('hidden');e.querySelector('span').textContent=m;}
 
-auth.onAuthStateChanged(async u=>{
-  if(u){
-    const s=await db.ref('users/'+u.uid+'/role').get();
-    const isAdmin = s.val()==='admin' || ADMIN_EMAILS.includes((u.email||'').toLowerCase());
-    if(isAdmin){
-      adminUser=u;
-      document.getElementById('adminAuth').classList.add('hidden');
-      document.getElementById('adminApp').classList.remove('hidden');
-      const av=document.getElementById('sbAv');
-      const nm=document.getElementById('sbName');
-      if(av) av.textContent=(u.displayName||u.email||'A')[0].toUpperCase();
-      if(nm) nm.textContent=u.displayName||u.email;
-      initDarkMode();
-      loadAll();
-    } else {
-      // Logged in but not admin — sign out
-      auth.signOut();
-    }
+// -- Safe Auth State Init -------------------------------------
+// Wrapped in DOMContentLoaded so DOM is always ready,
+// and guarded so crash if Firebase/auth not yet initialized.
+function _initAdminAuth(){
+  if(!auth || typeof auth.onAuthStateChanged !== 'function'){
+    // Firebase not ready yet -- retry after 300ms
+    setTimeout(_initAdminAuth, 300);
+    return;
   }
-});
+  auth.onAuthStateChanged(async u=>{
+    if(u){
+      try{
+        const s=await db.ref('users/'+u.uid+'/role').get();
+        const isAdmin = s.val()==='admin' || ADMIN_EMAILS.includes((u.email||'').toLowerCase());
+        if(isAdmin){
+          adminUser=u;
+          document.getElementById('adminAuth').classList.add('hidden');
+          document.getElementById('adminApp').classList.remove('hidden');
+          const av=document.getElementById('sbAv');
+          const nm=document.getElementById('sbName');
+          if(av) av.textContent=(u.displayName||u.email||'A')[0].toUpperCase();
+          if(nm) nm.textContent=u.displayName||u.email;
+          initDarkMode();
+          loadAll();
+        } else {
+          // Logged in but not admin -- sign out
+          auth.signOut();
+        }
+      }catch(e){ console.error('Auth state error:',e); }
+    }
+  });
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', _initAdminAuth);
+} else {
+  _initAdminAuth();
+}
 
 async function adminLogout(){await auth.signOut();location.reload();}
 
-// ── Load Data ────────────────────────────────────────────────
+// -- Load Data ------------------------------------------------
 async function loadAll(){
   // Settings
   const cs=await db.ref('appSettings').get();
@@ -696,7 +713,7 @@ async function loadAll(){
   allProds=ps.val()?Object.entries(ps.val()).map(([id,p])=>({id,...p})):defaultProds();
   if(!ps.val()) allProds.forEach(p=>db.ref('products/'+p.id).set(p));
 
-  // Customers — realtime listener (auto-updates table)
+  // Customers -- realtime listener (auto-updates table)
   db.ref('users').on('value', snap=>{
     allCusts=snap.val()?Object.entries(snap.val()).map(([id,u])=>({id,...u})).filter(u=>u.role!=='admin'):[];
     renderCustomers();
@@ -737,7 +754,7 @@ function defaultProds(){
 
 function renderAll(){renderDashboard();renderProducts();renderCustomers();renderCoupons();renderCategories();renderBanners();renderReviews();renderInventory();renderWATemplates();renderWACustomers();}
 
-// ── Nav ──────────────────────────────────────────────────────
+// -- Nav ------------------------------------------------------
 const viewTitles={dashboard:'Dashboard',orders:'All Orders',tracking:'Order Tracking',products:'Products',categories:'Categories',inventory:'Inventory',customers:'Customers',coupons:'Coupons & Discounts',notifications:'Push Notifications',whatsapp:'WhatsApp Messaging',banners:'Banners',payments:'Payments',reports:'Reports & Analytics',reviews:'Customer Reviews',settings:'App Settings'};
 
 function nav(pg){
@@ -755,7 +772,7 @@ function nav(pg){
 
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('sbshow');}
 
-// ── Dashboard ────────────────────────────────────────────────
+// -- Dashboard ------------------------------------------------
 function renderDashboard(){
   const tot=allOrders.length, rev=allOrders.reduce((s,o)=>s+(o.total||0),0);
   const del=allOrders.filter(o=>o.status==='Delivered').length;
@@ -782,7 +799,7 @@ function renderDashboard(){
   renderOrdersTable('recentBody',allOrders.slice(0,8));
 }
 
-// ── Orders ───────────────────────────────────────────────────
+// -- Orders ---------------------------------------------------
 const stPill={Confirmed:'p-b',Processing:'p-o',Shipped:'p-pu','Out for Delivery':'p-o',Delivered:'p-g',Cancelled:'p-r'};
 
 function renderOrders(){
@@ -799,12 +816,12 @@ function renderOrdersTable(tbId,list){
   const el=document.getElementById(tbId);if(!el)return;
   el.innerHTML=list.map(o=>`<tr>
     <td><strong style="font-family:'Exo 2',sans-serif;font-size:11px">${o.orderId||o.id}</strong></td>
-    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.userEmail||'—'}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.userEmail||'--'}</td>
     <td>${(o.items||[]).length}</td>
     <td><strong>₹${o.total||0}</strong></td>
     <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
-    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'--'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'--'}</span></td>
     <td><div class="tda">
       <div class="ab ab-b" onclick="viewOrder('${o.orderId||o.id}')" title="View"><i class="fas fa-eye"></i></div>
       <select style="padding:4px 6px;border:1.5px solid var(--b);border-radius:6px;font-size:11px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value)">
@@ -822,9 +839,9 @@ async function updateStatus(ordId,status){
 
 function viewOrder(ordId){
   const o=allOrders.find(x=>x.id===ordId||x.orderId===ordId);if(!o)return;
-  openModal('Order — '+o.orderId,`
+  openModal('Order -- '+o.orderId,`
     <div style="font-size:13px">
-      ${[['Order ID',o.orderId],['Customer',o.userEmail||'—'],['Total','₹'+(o.total||0)],['Payment',o.paymentMethod||'—'],['Date',o.createdAt?new Date(o.createdAt).toLocaleString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+      ${[['Order ID',o.orderId],['Customer',o.userEmail||'--'],['Total','₹'+(o.total||0)],['Payment',o.paymentMethod||'--'],['Date',o.createdAt?new Date(o.createdAt).toLocaleString('en-IN'):'--']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">Status</span><span class="pill ${stPill[o.status]||'p-gr'}">${o.status}</span></div>
       <div style="margin:10px 0 6px;font-weight:800;font-size:12px">Items (${(o.items||[]).length})</div>
       ${(o.items||[]).map(i=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--d)"><img src="${i.image}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"><div><div style="font-weight:700;font-size:12.5px">${i.name}</div><div style="color:var(--m);font-size:11.5px">₹${i.price} × ${i.qty||1}</div></div></div>`).join('')}
@@ -834,13 +851,13 @@ function viewOrder(ordId){
 
 function waOrder(email,ordId){window.open(`https://wa.me/?text=${encodeURIComponent(`Hi! Your Prince Enterprise order ${ordId} has been updated. For more info visit our store or reply here. Thank you! 💡`)}`, '_blank');}
 
-// ── Tracking ─────────────────────────────────────────────────
+// -- Tracking -------------------------------------------------
 function renderTracking(){
   const el=document.getElementById('trackBody');if(!el)return;
   el.innerHTML=allOrders.slice(0,20).map(o=>`<tr>
     <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+    <td style="font-size:12px">${o.userEmail||'--'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'--'}</span></td>
     <td><select style="padding:5px 8px;border:1.5px solid var(--b);border-radius:6px;font-size:11.5px;background:var(--c);color:var(--t);cursor:pointer" onchange="updateStatus('${o.orderId||o.id}',this.value);searchTrack()">
       ${['Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
     </select></td>
@@ -880,17 +897,17 @@ async function markStep(ordId,idx){
   showToast('Step marked done');setTimeout(searchTrack,400);
 }
 
-// ── Products ─────────────────────────────────────────────────
+// -- Products -------------------------------------------------
 function renderProducts(){
   const q=(document.getElementById('prodQ')||{}).value||'';
   const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase())||p.category.toLowerCase().includes(q.toLowerCase()));
   document.getElementById('prodsBody').innerHTML=list.map(p=>`<tr>
     <td><img class="td-img" src="${p.image}" onerror="this.src='https://via.placeholder.com/40x40/f0f0f0/888?text=P'"></td>
     <td style="max-width:200px"><strong style="font-size:12.5px">${p.name}</strong></td>
-    <td>${p.category||'—'}</td>
+    <td>${p.category||'--'}</td>
     <td><strong>₹${p.price}</strong>${p.originalPrice?` <span style="font-size:10px;color:var(--m);text-decoration:line-through">₹${p.originalPrice}</span>`:''}</td>
     <td><span style="font-weight:700;color:${(p.stock||0)<=5?'var(--r)':'var(--g)'}">${p.stock||0}</span></td>
-    <td style="font-size:11px">${[p.isNew&&'New',p.isBestSeller&&'Best',p.isFlashDeal&&'Flash'].filter(Boolean).map(f=>`<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('')||'—'}</td>
+    <td style="font-size:11px">${[p.isNew&&'New',p.isBestSeller&&'Best',p.isFlashDeal&&'Flash'].filter(Boolean).map(f=>`<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('')||'--'}</td>
     <td><div class="tda">
       <div class="ab ab-b" onclick="editProd('${p.id}')" title="Edit"><i class="fas fa-edit"></i></div>
       <div class="ab ab-r" onclick="delProd('${p.id}')" title="Delete"><i class="fas fa-trash"></i></div>
@@ -917,8 +934,8 @@ function openAddProduct(){
       <div class="fg"><label>Color Temp</label><input class="fc" id="pct" placeholder="Warm White 3000K"></div>
       <div class="fg"><label>Warranty</label><input class="fc" id="pwa" placeholder="1 Year"></div>
     </div>
-    <div class="fg"><label>Image URL</label><input class="fc" id="pi" placeholder="https://…"></div>
-    <div class="fg"><label>Description</label><textarea class="fc" id="pd" rows="2" placeholder="Product description…"></textarea></div>
+    <div class="fg"><label>Image URL</label><input class="fc" id="pi" placeholder="https://..."></div>
+    <div class="fg"><label>Description</label><textarea class="fc" id="pd" rows="2" placeholder="Product description..."></textarea></div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pnew" style="accent-color:var(--p)"> New Arrival</label>
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pbest" style="accent-color:var(--p)"> Best Seller</label>
@@ -969,7 +986,7 @@ async function delProd(pid){
   allProds=allProds.filter(x=>x.id!==pid);renderProducts();showToast('Product deleted');
 }
 
-// ── Categories ───────────────────────────────────────────────
+// -- Categories -----------------------------------------------
 const defaultCats=[{name:'Bulbs',icon:'💡',color:'#fff8e1'},{name:'Strip Lights',icon:'🌈',color:'#f3e5f5'},{name:'Panel Lights',icon:'⬜',color:'#e3f2fd'},{name:'Outdoor',icon:'🌿',color:'#e8f5e9'},{name:'Smart Lights',icon:'📡',color:'#e8eaf6'},{name:'Tube Lights',icon:'🔦',color:'#fce4ec'},{name:'Downlights',icon:'🔆',color:'#fff3e0'},{name:'Decorative',icon:'✨',color:'#fbe9e7'}];
 
 function renderCategories(){
@@ -986,7 +1003,7 @@ function renderCategories(){
 }
 function openAddCat(){openModal('Add Category',`<div class="fg"><label>Name*</label><input class="fc" id="ncn" placeholder="Category name"></div><div class="fg"><label>Icon (Emoji)</label><input class="fc" id="nci" placeholder="💡" style="max-width:80px"></div>`,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="closeModal();showToast('Category added!')">Add Category</button>`);}
 
-// ── Inventory ─────────────────────────────────────────────────
+// -- Inventory -------------------------------------------------
 function renderInventory(){
   const q=(document.getElementById('invQ')||{}).value||'';
   const list=allProds.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase()));
@@ -1008,7 +1025,7 @@ async function saveStock(pid){
   showToast('Stock updated to '+val);
 }
 
-// ── Customers ─────────────────────────────────────────────────
+// -- Customers -------------------------------------------------
 function renderCustomers(){
   const qEl=document.getElementById('custQ');
   const q=qEl?qEl.value.trim().toLowerCase():'';
@@ -1017,12 +1034,12 @@ function renderCustomers(){
     const ords=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email);
     const spent=ords.reduce((s,o)=>s+(o.total||0),0);
     return`<tr>
-      <td><strong>${u.name||'—'}</strong></td>
-      <td style="font-size:12px">${u.email||'—'}</td>
-      <td>${u.phone||'—'}</td>
+      <td><strong>${u.name||'--'}</strong></td>
+      <td style="font-size:12px">${u.email||'--'}</td>
+      <td>${u.phone||'--'}</td>
       <td>${ords.length}</td>
       <td>₹${spent.toLocaleString('en-IN')}</td>
-      <td style="font-size:11px">${u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+      <td style="font-size:11px">${u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'--'}</td>
       <td><div class="tda">
         <div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
         <div class="ab ab-b" onclick="viewCust('${u.id}')" title="View"><i class="fas fa-eye"></i></div>
@@ -1036,7 +1053,7 @@ function viewCust(uid){
   const u=allCusts.find(x=>x.id===uid);if(!u)return;
   const ords=allOrders.filter(o=>o.userId===uid||o.userEmail===u.email);
   openModal(u.name||'Customer',`<div style="font-size:13px">
-    ${[['Name',u.name||'—'],['Email',u.email||'—'],['Phone',u.phone||'—'],['Address',u.address||'—'],['Orders',ords.length],['Total Spent','₹'+ords.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN')],['Joined',u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'—']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
+    ${[['Name',u.name||'--'],['Email',u.email||'--'],['Phone',u.phone||'--'],['Address',u.address||'--'],['Orders',ords.length],['Total Spent','₹'+ords.reduce((s,o)=>s+(o.total||0),0).toLocaleString('en-IN')],['Joined',u.createdAt?new Date(u.createdAt).toLocaleDateString('en-IN'):'--']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d)"><span style="color:var(--m)">${k}</span><strong>${v}</strong></div>`).join('')}
   </div>`,`<button class="btn btn-w btn-sm" onclick="waCustomer('${u.phone||''}','${u.name||''}');closeModal()"><i class="fab fa-whatsapp"></i> Message</button><button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>`);
 }
 
@@ -1071,7 +1088,7 @@ function waCustomer(phone,name){
   else{document.getElementById('waPhone').value=phone||'';document.getElementById('waName').value=name||'';document.getElementById('waMsg').value=`Hi ${name}! Thank you for shopping at Prince Enterprise. 💡`;nav('whatsapp');}
 }
 
-// ── Coupons ───────────────────────────────────────────────────
+// -- Coupons ---------------------------------------------------
 function renderCoupons(){
   document.getElementById('couponsWrap').innerHTML=allCoupons.map(c=>`
     <div class="coup" style="${c.active?'':'opacity:.55;filter:grayscale(.5)'}">
@@ -1125,7 +1142,7 @@ async function delCoup(id){
   allCoupons=allCoupons.filter(x=>x.id!==id);renderCoupons();showToast('Coupon deleted');
 }
 
-// ── Notifications ─────────────────────────────────────────────
+// -- Notifications ---------------------------------------------
 async function sendNotif(){
   const title=document.getElementById('ntTitle').value.trim();
   const msg=document.getElementById('ntMsg').value.trim();
@@ -1146,15 +1163,15 @@ async function renderNotifHistory(){
   const snap=await db.ref('notifHistory').orderByChild('createdAt').limitToLast(10).get();
   const hist=snap.val()?Object.values(snap.val()).reverse():[];
   const el=document.getElementById('ntHistBody');if(!el)return;
-  el.innerHTML=hist.map(n=>`<tr><td><strong>${n.title}</strong></td><td style="font-size:12px;max-width:200px">${n.desc}</td><td style="font-size:11px">${n.createdAt?new Date(n.createdAt).toLocaleString('en-IN'):'—'}</td><td>${n.recipients||0}</td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No notifications sent</td></tr>`;
+  el.innerHTML=hist.map(n=>`<tr><td><strong>${n.title}</strong></td><td style="font-size:12px;max-width:200px">${n.desc}</td><td style="font-size:11px">${n.createdAt?new Date(n.createdAt).toLocaleString('en-IN'):'--'}</td><td>${n.recipients||0}</td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No notifications sent</td></tr>`;
 }
 
-// ── WhatsApp ──────────────────────────────────────────────────
+// -- WhatsApp --------------------------------------------------
 function renderWATemplates(){
   const tpls=[{icon:'📦',name:'Order Confirmed',msg:`Hi {name}! Your order #{orderId} has been confirmed at Prince Enterprise. We'll dispatch it soon. Thank you! 💡`},{icon:'🚚',name:'Order Shipped',msg:`Hi {name}! Your order #{orderId} has been shipped and is on its way. Expected delivery in 2-3 days. 🚚`},{icon:'✅',name:'Order Delivered',msg:`Hi {name}! Your order has been delivered. Hope you love your new LED products! Rate us at princeenterprise.com ⭐`},{icon:'🎁',name:'Promotional Offer',msg:`Hi {name}! Prince Enterprise FLASH SALE 🔥 Up to 60% OFF on LED lights! Shop now. Use code PRINCE10 for extra 10% off.`},{icon:'⭐',name:'Review Request',msg:`Hi {name}! How are you enjoying your LED products from Prince Enterprise? Leave us a review and get 5% off your next order! 🌟`}];
   const el=document.getElementById('waTemplates');if(!el)return;
   el.innerHTML=tpls.map(t=>`<div style="background:var(--bg);border-radius:var(--rd);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:9px;border:1.5px solid var(--b)">
-    <div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:3px">${t.icon} ${t.name}</div><div style="font-size:11.5px;color:var(--m);line-height:1.4">${t.msg.substring(0,80)}…</div></div>
+    <div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:3px">${t.icon} ${t.name}</div><div style="font-size:11.5px;color:var(--m);line-height:1.4">${t.msg.substring(0,80)}...</div></div>
     <div class="ab ab-wa" onclick="useTemplate('${t.msg.replace(/'/g,"\\'")}')"><i class="fas fa-arrow-right"></i></div>
   </div>`).join('');
 }
@@ -1178,17 +1195,17 @@ function renderWACustomers(){
   el.innerHTML=allCusts.slice(0,10).map(u=>{
     const lastOrd=allOrders.filter(o=>o.userId===u.id||o.userEmail===u.email)[0];
     return`<tr>
-      <td><strong>${u.name||'—'}</strong></td>
-      <td>${u.phone||'—'}</td>
+      <td><strong>${u.name||'--'}</strong></td>
+      <td>${u.phone||'--'}</td>
       <td style="font-size:11.5px">${lastOrd?`#${lastOrd.orderId} (${lastOrd.status})`:'No orders'}</td>
       <td><div class="ab ab-wa" onclick="waCustomer('${u.phone||''}','${u.name||'Customer'}')" title="Send WhatsApp"><i class="fab fa-whatsapp"></i></div></td>
     </tr>`;
   }).join('')||`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">No customers</td></tr>`;
 }
 
-// ── Banners ───────────────────────────────────────────────────
+// -- Banners ---------------------------------------------------
 function renderBanners(){
-  const bans=[{title:'Flash Sale — 60% OFF LED',sub:'Brighten your home & save big!',badge:'⚡ Flash Sale',bg:'#0d1b5e',active:true},{title:'Smart RGB Strip Lights',sub:'Color changing. App controlled.',badge:'🆕 New Arrival',bg:'#4a0073',active:true},{title:'Energy Saving — Save 80%',sub:'Premium LED technology',badge:'🌿 Eco',bg:'#1b4010',active:false},{title:'Buy 2 Get 1 Free Deal',sub:'On selected LED panels',badge:'🎁 Offer',bg:'#7c1010',active:true}];
+  const bans=[{title:'Flash Sale -- 60% OFF LED',sub:'Brighten your home & save big!',badge:'⚡ Flash Sale',bg:'#0d1b5e',active:true},{title:'Smart RGB Strip Lights',sub:'Color changing. App controlled.',badge:'🆕 New Arrival',bg:'#4a0073',active:true},{title:'Energy Saving -- Save 80%',sub:'Premium LED technology',badge:'🌿 Eco',bg:'#1b4010',active:false},{title:'Buy 2 Get 1 Free Deal',sub:'On selected LED panels',badge:'🎁 Offer',bg:'#7c1010',active:true}];
   const el=document.getElementById('bannersWrap');if(!el)return;
   el.innerHTML=bans.map((b,i)=>`<div class="card" style="margin-bottom:10px;overflow:hidden">
     <div style="background:${b.bg};padding:13px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -1214,7 +1231,7 @@ function openAddBanner(){
   `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="closeModal();showToast('Banner added!')">Add Banner</button>`);
 }
 
-// ── Payments ──────────────────────────────────────────────────
+// -- Payments --------------------------------------------------
 function renderPayments(){
   const upi=allOrders.filter(o=>o.paymentMethod==='UPI').reduce((s,o)=>s+(o.total||0),0);
   const cod=allOrders.filter(o=>o.paymentMethod==='COD').reduce((s,o)=>s+(o.total||0),0);
@@ -1226,15 +1243,15 @@ function renderPayments(){
   `;
   document.getElementById('payBody').innerHTML=allOrders.map(o=>`<tr>
     <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId||o.id}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
+    <td style="font-size:12px">${o.userEmail||'--'}</td>
     <td><strong>₹${o.total||0}</strong></td>
     <td><span class="pill ${o.paymentMethod==='UPI'?'p-b':'p-g'}">${o.paymentMethod||'COD'}</span></td>
-    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'—'}</td>
-    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'—'}</span></td>
+    <td style="font-size:11px">${o.createdAt?new Date(o.createdAt).toLocaleDateString('en-IN'):'--'}</td>
+    <td><span class="pill ${stPill[o.status]||'p-gr'}">${o.status||'--'}</span></td>
   </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No payments</td></tr>`;
 }
 
-// ── Reports ───────────────────────────────────────────────────
+// -- Reports ---------------------------------------------------
 function renderReports(){
   const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
   const avg=allOrders.length?Math.round(total/allOrders.length):0;
@@ -1261,7 +1278,7 @@ function renderReports(){
   document.getElementById('catBreak').innerHTML=cats.map(c=>{const cnt=allProds.filter(p=>p.category===c).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--d);font-size:12.5px"><span>${c}</span><span class="pill p-b">${cnt}</span></div>`;}).join('');
 }
 
-// ── Reviews ───────────────────────────────────────────────────
+// -- Reviews ---------------------------------------------------
 function renderReviews(){
   const sampleRevs=[{product:'9W LED Bulb',customer:'Rohit S.',rating:5,text:'Excellent! Very bright.',date:'2024-12-10',status:'approved'},{product:'RGB Strip 5M',customer:'Priya M.',rating:4,text:'Good quality, easy to install.',date:'2024-12-08',status:'approved'},{product:'Panel Light 12W',customer:'Arun K.',rating:3,text:'Average quality, expected brighter.',date:'2024-12-05',status:'pending'},{product:'Smart WiFi Bulb',customer:'Neha T.',rating:5,text:'Works great with Google Home!',date:'2024-12-02',status:'approved'},{product:'LED Tube Light',customer:'Vijay R.',rating:4,text:'Good replacement for fluorescent.',date:'2024-11-28',status:'pending'}];
   const el=document.getElementById('reviewsBody');if(!el)return;
@@ -1278,7 +1295,7 @@ function renderReviews(){
   </tr>`).join('');
 }
 
-// ── Settings ──────────────────────────────────────────────────
+// -- Settings --------------------------------------------------
 function loadSettingsUI(){
   const s=appCfg;
   const f=(id,val)=>{const el=document.getElementById(id);if(el&&val!=null)el.value=val;};
@@ -1317,7 +1334,7 @@ function previewQR(){
   else showToast('QR: '+upi);
 }
 
-// ── Misc / Modal / Utils ──────────────────────────────────────
+// -- Misc / Modal / Utils --------------------------------------
 function openModal(title,body,foot=''){
   document.getElementById('mTitle').textContent=title;
   document.getElementById('mBody').innerHTML=body;
@@ -1331,7 +1348,7 @@ function showToast(msg,dur=2600){
   setTimeout(()=>t.classList.remove('show'),dur);
 }
 
-function exportCSV(){showToast('CSV exported! (demo — implement server-side for production)');}
+function exportCSV(){showToast('CSV exported! (demo -- implement server-side for production)');}
 
 function initDarkMode(){
   isDark=localStorage.getItem('pe_admin_dark')==='1';applyDark();
@@ -1355,10 +1372,10 @@ document.addEventListener('click',e=>{
 // 10 NEW ADMIN FEATURES
 // ══════════════════════════════════════════════════════════════════
 
-// ─── Update viewTitles ───────────────────────────────────────────
+// --- Update viewTitles -------------------------------------------
 Object.assign(viewTitles,{analytics:'Advanced Analytics',bulk:'Bulk Order Enquiries',loyalty:'Loyalty Program',refunds:'Refunds & Returns',pricealerts:'Price Alerts'});
 
-// ─── 1. ADVANCED ANALYTICS ───────────────────────────────────────
+// --- 1. ADVANCED ANALYTICS ---------------------------------------
 function renderAnalytics(){
   const total=allOrders.reduce((s,o)=>s+(o.total||0),0);
   const avg=allOrders.length?Math.round(total/allOrders.length):0;
@@ -1395,7 +1412,7 @@ function renderAnalytics(){
   const hours=Array(24).fill(0);
   allOrders.forEach(o=>{ if(o.createdAt) hours[new Date(o.createdAt).getHours()]++; });
   const peakMx=Math.max(...hours,1);
-  document.getElementById('peakHours').innerHTML=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px">`+hours.map((v,i)=>`<div style="flex:1;height:${Math.round(v/peakMx*100)}%;background:${v===Math.max(...hours)?'var(--s)':'var(--p)'};opacity:.8;border-radius:2px 2px 0 0;min-height:2px" title="${i}:00 — ${v} orders"></div>`).join('')+'</div><div style="font-size:10px;color:var(--m);margin-top:5px;text-align:center">0h ———————————— 23h</div>';
+  document.getElementById('peakHours').innerHTML=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px">`+hours.map((v,i)=>`<div style="flex:1;height:${Math.round(v/peakMx*100)}%;background:${v===Math.max(...hours)?'var(--s)':'var(--p)'};opacity:.8;border-radius:2px 2px 0 0;min-height:2px" title="${i}:00 -- ${v} orders"></div>`).join('')+'</div><div style="font-size:10px;color:var(--m);margin-top:5px;text-align:center">0h ------------------------ 23h</div>';
   // Retention
   const repeat=allCusts.filter(u=>allOrders.filter(o=>o.userEmail===u.email).length>1).length;
   document.getElementById('retentionStats').innerHTML=`
@@ -1405,25 +1422,25 @@ function renderAnalytics(){
   `;
 }
 
-// ─── 2. BULK ORDERS ──────────────────────────────────────────────
+// --- 2. BULK ORDERS ----------------------------------------------
 async function renderBulk(){
   const snap = await db.ref('bulkOrders').orderByChild('time').limitToLast(30).get();
   const list = snap.val()?Object.entries(snap.val()).map(([id,b])=>({id,...b})).reverse():[];
   const el = document.getElementById('bulkBody');if(!el)return;
   el.innerHTML = list.map(b=>`<tr>
-    <td><strong>${b.prod||'—'}</strong></td>
-    <td>${b.qty||'—'}</td>
-    <td>${b.phone||'—'}</td>
-    <td style="font-size:12px">${b.userId||'—'}</td>
-    <td style="font-size:11px">${b.time?new Date(b.time).toLocaleDateString('en-IN'):'—'}</td>
+    <td><strong>${b.prod||'--'}</strong></td>
+    <td>${b.qty||'--'}</td>
+    <td>${b.phone||'--'}</td>
+    <td style="font-size:12px">${b.userId||'--'}</td>
+    <td style="font-size:11px">${b.time?new Date(b.time).toLocaleDateString('en-IN'):'--'}</td>
     <td><div class="tda">
-      <div class="ab ab-wa" onclick="window.open('https://wa.me/${(b.phone||'').replace(/\D/g,'')}?text='+encodeURIComponent('Hi! Regarding your bulk order enquiry for ${b.prod||'LED products'} (Qty: ${b.qty||'—'}) from Prince Enterprise. We have special pricing available!'),'_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
+      <div class="ab ab-wa" onclick="window.open('https://wa.me/${(b.phone||'').replace(/\D/g,'')}?text='+encodeURIComponent('Hi! Regarding your bulk order enquiry for ${b.prod||'LED products'} (Qty: ${b.qty||'--'}) from Prince Enterprise. We have special pricing available!'),'_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></div>
       <div class="ab ab-r" onclick="db.ref('bulkOrders/${b.id}').remove();showToast('Removed');renderBulk()" title="Remove"><i class="fas fa-trash"></i></div>
     </div></td>
   </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--m)">No bulk enquiries yet</td></tr>';
 }
 
-// ─── 3. LOYALTY PROGRAM ──────────────────────────────────────────
+// --- 3. LOYALTY PROGRAM ------------------------------------------
 function renderLoyalty(){
   document.getElementById('loyaltyStats').innerHTML=`
     <div class="scard sc-o"><div class="sc-ico" style="background:var(--s)"><i class="fas fa-star"></i></div><div class="sc-val">${allCusts.length*40}</div><div class="sc-lbl">Total Points Issued</div></div>
@@ -1433,7 +1450,7 @@ function renderLoyalty(){
   document.getElementById('loyaltyBody').innerHTML=allCusts.slice(0,10).map((u,i)=>{
     const pts=(i+1)*40+Math.floor(Math.random()*100);
     return`<tr>
-      <td><strong>${u.name||'—'}</strong><br><span style="font-size:11px;color:var(--m)">${u.email||''}</span></td>
+      <td><strong>${u.name||'--'}</strong><br><span style="font-size:11px;color:var(--m)">${u.email||''}</span></td>
       <td><strong style="color:#f57c00">${pts}</strong> pts</td>
       <td>₹${(allOrders.filter(o=>o.userEmail===u.email).reduce((s,o)=>s+(o.total||0),0)).toLocaleString('en-IN')}</td>
       <td><div class="ab ab-o" onclick="grantPoints('${u.id}','${u.name||'Customer'}')"><i class="fas fa-plus"></i></div></td>
@@ -1459,13 +1476,13 @@ function openLoyaltySettings(){
    <button class="btn btn-p" onclick="(async()=>{await db.ref('loyaltySettings').set({ratePerHundred:+document.getElementById('lp-rate').value,redeemRate:+document.getElementById('lp-redeem').value,minRedeem:+document.getElementById('lp-min').value,referralBonus:+document.getElementById('lp-ref').value});closeModal();showToast('Loyalty settings saved!')})()"><i class="fas fa-save"></i> Save</button>`);
 }
 
-// ─── 4. REFUNDS MANAGER ──────────────────────────────────────────
+// --- 4. REFUNDS MANAGER ------------------------------------------
 function renderRefunds(){
   const cancelled = allOrders.filter(o=>o.status==='Cancelled');
   const el = document.getElementById('refundsBody');if(!el)return;
   el.innerHTML = cancelled.map(o=>`<tr>
     <td><strong style="font-size:11px;font-family:'Exo 2',sans-serif">${o.orderId}</strong></td>
-    <td style="font-size:12px">${o.userEmail||'—'}</td>
+    <td style="font-size:12px">${o.userEmail||'--'}</td>
     <td><strong>₹${o.total||0}</strong></td>
     <td style="font-size:12px">${o.cancelReason||'Customer cancelled'}</td>
     <td><span class="pill ${o.refundStatus==='Processed'?'p-g':o.refundStatus==='Pending'?'p-o':'p-gr'}">${o.refundStatus||'Pending'}</span></td>
@@ -1483,11 +1500,11 @@ async function processRefund(ordId){
   renderRefunds();
 }
 
-// ─── 5. PRICE ALERTS ─────────────────────────────────────────────
+// --- 5. PRICE ALERTS ---------------------------------------------
 async function renderPriceAlerts(){
   // Populate product selector
   const sel = document.getElementById('alertProdSel');
-  if(sel) sel.innerHTML = allProds.map(p=>`<option value="${p.id}">${p.name} — ₹${p.price}</option>`).join('');
+  if(sel) sel.innerHTML = allProds.map(p=>`<option value="${p.id}">${p.name} -- ₹${p.price}</option>`).join('');
   // Load alerts
   const snap = await db.ref('priceAlerts').get();
   const alerts = [];
@@ -1504,7 +1521,7 @@ async function renderPriceAlerts(){
       <td>${p?p.name:'Unknown'}</td>
       <td style="font-size:12px">${a.uid}</td>
       <td>₹${a.price}</td>
-      <td><strong style="color:${dropped?'var(--g)':'var(--t)'}">₹${p?p.price:'—'}</strong></td>
+      <td><strong style="color:${dropped?'var(--g)':'var(--t)'}">₹${p?p.price:'--'}</strong></td>
       <td><span class="pill ${dropped?'p-g':'p-b'}">${dropped?'Dropped!':'Watching'}</span></td>
     </tr>`;
   }).join('')||'<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--m)">No price alerts set</td></tr>';
@@ -1523,7 +1540,7 @@ async function sendPriceDropAlert(){
   showToast('Price drop alert sent to all customers!');
 }
 
-// ─── 6. PRODUCT QUICK EDIT (inline) ──────────────────────────────
+// --- 6. PRODUCT QUICK EDIT (inline) ------------------------------
 function quickEditPrice(pid){
   const p = allProds.find(x=>x.id===pid); if(!p) return;
   openModal('Quick Price Edit: '+p.name.substring(0,25),`
@@ -1538,10 +1555,10 @@ function quickEditPrice(pid){
    <button class="btn btn-g" onclick="(async()=>{const np=+document.getElementById('qep').value;const nop=+document.getElementById('qeop').value;const fl=document.getElementById('qeflash').value==='true';const disc=nop?Math.round((1-np/nop)*100):0;await db.ref('products/${pid}').update({price:np,originalPrice:nop,discount:disc,isFlashDeal:fl,updatedAt:Date.now()});const i=allProds.findIndex(x=>x.id==='${pid}');if(i>-1)Object.assign(allProds[i],{price:np,originalPrice:nop,discount:disc,isFlashDeal:fl});closeModal();renderProducts();showToast('Price updated: ₹${p.price} → ₹'+np)})()"><i class="fas fa-save"></i> Update Price</button>`);
 }
 
-// ─── 7. ADMIN STATS EXPORT ───────────────────────────────────────
+// --- 7. ADMIN STATS EXPORT ---------------------------------------
 function exportFullReport(){
   const lines = [
-    'Prince Enterprise — Full Report',
+    'Prince Enterprise -- Full Report',
     'Generated: '+new Date().toLocaleString('en-IN'),
     '',
     '=== SUMMARY ===',
@@ -1554,8 +1571,7 @@ function exportFullReport(){
     'Order ID,Customer,Total,Method,Status,Date',
     ...allOrders.map(o=>[o.orderId,o.userEmail,o.total,o.paymentMethod,o.status,new Date(o.createdAt||0).toLocaleDateString('en-IN')].join(','))
   ];
-  const blob = new Blob([lines.join('
-')], {type:'text/csv'});
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'prince-enterprise-report-'+Date.now()+'.csv';
@@ -1563,7 +1579,7 @@ function exportFullReport(){
   showToast('Full report downloaded!');
 }
 
-// ─── 8. LIVE ORDER BELL ───────────────────────────────────────────
+// --- 8. LIVE ORDER BELL -------------------------------------------
 let _lastOrderCount = 0;
 function initLiveOrderWatch(){
   db.ref('orders').on('value', snap=>{
@@ -1579,7 +1595,7 @@ function initLiveOrderWatch(){
   });
 }
 
-// ─── 9. PRODUCT STOCK HISTORY ─────────────────────────────────────
+// --- 9. PRODUCT STOCK HISTORY -------------------------------------
 function viewStockHistory(pid){
   const p = allProds.find(x=>x.id===pid); if(!p) return;
   openModal('Stock History: '+p.name.substring(0,25),`
@@ -1605,7 +1621,7 @@ function viewStockHistory(pid){
   `,'',`<button class="btn btn-p btn-sm" onclick="quickEditPrice('${pid}');closeModal()"><i class="fas fa-tag"></i> Edit Price</button>`);
 }
 
-// ─── 10. SEND TARGETED NOTIFICATION ──────────────────────────────
+// --- 10. SEND TARGETED NOTIFICATION ------------------------------
 function openTargetedNotif(){
   openModal('Send Targeted Notification',`
     <div class="fg"><label>Target Group</label><select class="fc" id="tn-target">
@@ -1615,7 +1631,7 @@ function openTargetedNotif(){
       <option value="inactive">Inactive (no order in 30d)</option>
     </select></div>
     <div class="fg"><label>Title</label><input class="fc" id="tn-title" placeholder="Notification title"></div>
-    <div class="fg"><label>Message</label><textarea class="fc" id="tn-msg" rows="3" placeholder="Message body…"></textarea></div>
+    <div class="fg"><label>Message</label><textarea class="fc" id="tn-msg" rows="3" placeholder="Message body..."></textarea></div>
     <div class="fg"><label>Icon (emoji)</label><input class="fc" id="tn-ico" placeholder="🎁" style="max-width:80px"></div>
   `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button>
    <button class="btn btn-p" onclick="sendTargetedNotif()"><i class="fas fa-paper-plane"></i> Send</button>`);
@@ -1638,7 +1654,7 @@ async function sendTargetedNotif(){
   showToast('Notification sent to '+targets.length+' customers!');
 }
 
-// ── Hook into nav for new views ───────────────────────────────────
+// -- Hook into nav for new views -----------------------------------
 const _origAdminNav = nav;
 nav = function(pg){
   _origAdminNav(pg);
