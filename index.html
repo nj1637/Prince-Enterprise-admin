@@ -733,18 +733,20 @@ async function loadAll(){
   ];
 
   // Orders - live listener
+  let _ordersFirstLoad = false;
   db.ref('orders').on('value',snap=>{
     allOrders=snap.val()?Object.entries(snap.val()).map(([id,o])=>({id,...o})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[];
     const newCount=allOrders.filter(o=>o.status==='Confirmed').length;
     ['nbOrders','hdrBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=newCount;});
-    // Always refresh all data views
     renderDashboard();
     renderOrders();
     renderPayments();
     renderTracking();
     renderRefunds();
+    // First load: also render everything else now that orders are ready
+    if(!_ordersFirstLoad){ _ordersFirstLoad=true; renderAll(); }
   });
-
+  // renderAll also called here so non-order views (products, customers etc) show immediately
   renderAll();
 }
 
@@ -909,6 +911,7 @@ function renderProducts(){
     <td><span style="font-weight:700;color:${(p.stock||0)<=5?'var(--r)':'var(--g)'}">${p.stock||0}</span></td>
     <td style="font-size:11px">${[p.isNew&&'New',p.isBestSeller&&'Best',p.isFlashDeal&&'Flash'].filter(Boolean).map(f=>`<span class="pill p-b" style="margin:1px;font-size:9.5px">${f}</span>`).join('')||'--'}</td>
     <td><div class="tda">
+      <div class="ab ab-g" onclick="viewProdImg('${p.id}')" title="View Image"><i class="fas fa-image"></i></div>
       <div class="ab ab-b" onclick="editProd('${p.id}')" title="Edit"><i class="fas fa-edit"></i></div>
       <div class="ab ab-r" onclick="delProd('${p.id}')" title="Delete"><i class="fas fa-trash"></i></div>
     </div></td>
@@ -934,7 +937,21 @@ function openAddProduct(){
       <div class="fg"><label>Color Temp</label><input class="fc" id="pct" placeholder="Warm White 3000K"></div>
       <div class="fg"><label>Warranty</label><input class="fc" id="pwa" placeholder="1 Year"></div>
     </div>
-    <div class="fg"><label>Image URL</label><input class="fc" id="pi" placeholder="https://..."></div>
+    <div class="fg"><label>Product Image</label>
+      <div id="imgUploadBox" style="border:2px dashed var(--b);border-radius:var(--rd);padding:14px;text-align:center;cursor:pointer;transition:var(--tr);position:relative" onclick="document.getElementById('imgFileIn').click()">
+        <img id="imgPreview" src="" style="max-height:120px;max-width:100%;border-radius:6px;margin:0 auto 8px;display:none">
+        <div id="imgPlaceholder"><i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--m);margin-bottom:6px;display:block"></i><div style="font-size:12px;color:var(--m)">Click to upload image</div><div style="font-size:10.5px;color:var(--b);margin-top:2px">JPG, PNG, WEBP up to 5MB</div></div>
+        <input type="file" id="imgFileIn" accept="image/*" style="display:none" onchange="previewImg(this)">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+        <span style="font-size:11px;color:var(--m)">or paste URL:</span>
+        <input class="fc" id="pi" placeholder="https://..." style="flex:1;font-size:12px;padding:6px 10px" oninput="if(this.value){showImgPreviewUrl(this.value)}">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:7px">
+        <button type="button" class="btn btn-sm" style="background:#fff3e0;color:#e65100;font-size:11px" onclick="viewImgFull()"><i class="fas fa-eye"></i> View</button>
+        <button type="button" class="btn btn-sm" style="background:#ffebee;color:var(--r);font-size:11px" onclick="removeImg()"><i class="fas fa-times"></i> Remove</button>
+      </div>
+    </div>
     <div class="fg"><label>Description</label><textarea class="fc" id="pd" rows="2" placeholder="Product description..."></textarea></div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="pnew" style="accent-color:var(--p)"> New Arrival</label>
@@ -944,13 +961,79 @@ function openAddProduct(){
   `,`<button class="btn" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Cancel</button><button class="btn btn-g" onclick="saveNewProd()"><i class="fas fa-save"></i> Save Product</button>`);
 }
 
+// ── Image Upload Helpers ─────────────────────────────────────
+let _imgBase64 = null; // for add product
+let _eImgBase64 = null; // for edit product
+
+function previewImg(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>5*1024*1024){showToast('Image too large (max 5MB)');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    _imgBase64=e.target.result;
+    document.getElementById('imgPreview').src=_imgBase64;
+    document.getElementById('imgPreview').style.display='block';
+    document.getElementById('imgPlaceholder').style.display='none';
+    document.getElementById('pi').value='';
+  };
+  r.readAsDataURL(file);
+}
+function showImgPreviewUrl(url){
+  _imgBase64=null;
+  document.getElementById('imgPreview').src=url;
+  document.getElementById('imgPreview').style.display='block';
+  document.getElementById('imgPlaceholder').style.display='none';
+}
+function viewImgFull(){
+  const src=_imgBase64||document.getElementById('pi').value;
+  if(!src){showToast('No image to view');return;}
+  openModal('Image Preview','<img src="'+src+'" style="width:100%;border-radius:8px;max-height:70vh;object-fit:contain">','<button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>');
+}
+function removeImg(){
+  _imgBase64=null;
+  document.getElementById('imgPreview').src='';
+  document.getElementById('imgPreview').style.display='none';
+  document.getElementById('imgPlaceholder').style.display='block';
+  document.getElementById('pi').value='';
+  showToast('Image removed');
+}
+// Edit product image helpers
+function ePreviewImg(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>5*1024*1024){showToast('Image too large (max 5MB)');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    _eImgBase64=e.target.result;
+    document.getElementById('eImgPreview').src=_eImgBase64;
+    document.getElementById('eImgPreview').style.display='block';
+    document.getElementById('eImgPlaceholder').style.display='none';
+    document.getElementById('epi').value='';
+  };
+  r.readAsDataURL(file);
+}
+function eViewImgFull(){
+  const src=_eImgBase64||document.getElementById('epi').value;
+  if(!src){showToast('No image to view');return;}
+  openModal('Image Preview','<img src="'+src+'" style="width:100%;border-radius:8px;max-height:70vh;object-fit:contain">','<button class="btn btn-p btn-sm" onclick="closeModal()">Close</button>');
+}
+function eRemoveImg(){
+  _eImgBase64=null;
+  document.getElementById('eImgPreview').src='';
+  document.getElementById('eImgPreview').style.display='none';
+  document.getElementById('eImgPlaceholder').style.display='block';
+  document.getElementById('epi').value='';
+  showToast('Image removed');
+}
+
 async function saveNewProd(){
   const name=document.getElementById('pn').value.trim();
   if(!name){showToast('Product name required');return;}
   const id='p'+Date.now();
   const price=+document.getElementById('pp').value||0;
   const orig=+document.getElementById('pop').value||0;
-  const p={id,name,category:document.getElementById('pc').value,price,originalPrice:orig,discount:orig?Math.round((1-price/orig)*100):0,stock:+document.getElementById('pst').value||0,wattage:document.getElementById('pw').value,voltage:document.getElementById('pv').value,color:document.getElementById('pct').value,warranty:document.getElementById('pwa').value,image:document.getElementById('pi').value||'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED',description:document.getElementById('pd').value,isNew:document.getElementById('pnew').checked,isBestSeller:document.getElementById('pbest').checked,isFlashDeal:document.getElementById('pflash').checked,rating:4.0,reviews:0,createdAt:Date.now()};
+  const imgVal=_imgBase64||document.getElementById('pi').value||'https://via.placeholder.com/300x200/e3f2fd/1565c0?text=LED';
+  const p={id,name,category:document.getElementById('pc').value,price,originalPrice:orig,discount:orig?Math.round((1-price/orig)*100):0,stock:+document.getElementById('pst').value||0,wattage:document.getElementById('pw').value,voltage:document.getElementById('pv').value,color:document.getElementById('pct').value,warranty:document.getElementById('pwa').value,image:imgVal,description:document.getElementById('pd').value,isNew:document.getElementById('pnew').checked,isBestSeller:document.getElementById('pbest').checked,isFlashDeal:document.getElementById('pflash').checked,rating:4.0,reviews:0,createdAt:Date.now()};
+  _imgBase64=null;
   await db.ref('products/'+id).set(p);
   allProds.push(p);closeModal();renderProducts();showToast('Product added!');
 }
@@ -963,7 +1046,21 @@ function editProd(pid){
       <div class="fg"><label>Price (₹)</label><input class="fc" id="epp" type="number" value="${p.price||0}"></div>
       <div class="fg"><label>Stock</label><input class="fc" id="epst" type="number" value="${p.stock||0}"></div>
     </div>
-    <div class="fg"><label>Image URL</label><input class="fc" id="epi" value="${p.image||''}"></div>
+    <div class="fg"><label>Product Image</label>
+      <div id="eImgBox" style="border:2px dashed var(--b);border-radius:var(--rd);padding:10px;text-align:center;cursor:pointer;transition:var(--tr)" onclick="document.getElementById('eImgFileIn').click()">
+        <img id="eImgPreview" src="${p.image||''}" style="max-height:100px;max-width:100%;border-radius:6px;margin:0 auto 6px;display:${p.image?'block':'none'}">
+        <div id="eImgPlaceholder" style="${p.image?'display:none':''}"><i class="fas fa-cloud-upload-alt" style="font-size:22px;color:var(--m);display:block;margin-bottom:4px"></i><div style="font-size:11px;color:var(--m)">Click to upload new image</div></div>
+        <input type="file" id="eImgFileIn" accept="image/*" style="display:none" onchange="ePreviewImg(this)">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+        <span style="font-size:11px;color:var(--m)">or URL:</span>
+        <input class="fc" id="epi" value="${p.image||''}" style="flex:1;font-size:12px;padding:6px 10px" oninput="if(this.value){document.getElementById('eImgPreview').src=this.value;document.getElementById('eImgPreview').style.display='block';document.getElementById('eImgPlaceholder').style.display='none'}">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:7px">
+        <button type="button" class="btn btn-sm" style="background:#e3f2fd;color:var(--p);font-size:11px" onclick="eViewImgFull()"><i class="fas fa-eye"></i> View</button>
+        <button type="button" class="btn btn-sm" style="background:#ffebee;color:var(--r);font-size:11px" onclick="eRemoveImg()"><i class="fas fa-times"></i> Remove</button>
+      </div>
+    </div>
     <div class="fg"><label>Description</label><textarea class="fc" id="epd" rows="2">${p.description||''}</textarea></div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer"><input type="checkbox" id="epnew" ${p.isNew?'checked':''} style="accent-color:var(--p)"> New</label>
@@ -974,7 +1071,9 @@ function editProd(pid){
 }
 
 async function saveEditProd(pid){
-  const u={name:document.getElementById('epn').value,price:+document.getElementById('epp').value,stock:+document.getElementById('epst').value,image:document.getElementById('epi').value,description:document.getElementById('epd').value,isNew:document.getElementById('epnew').checked,isBestSeller:document.getElementById('epbest').checked,isFlashDeal:document.getElementById('epflash').checked};
+  const imgVal=_eImgBase64||document.getElementById('epi').value;
+  const u={name:document.getElementById('epn').value,price:+document.getElementById('epp').value,stock:+document.getElementById('epst').value,image:imgVal,description:document.getElementById('epd').value,isNew:document.getElementById('epnew').checked,isBestSeller:document.getElementById('epbest').checked,isFlashDeal:document.getElementById('epflash').checked};
+  _eImgBase64=null;
   await db.ref('products/'+pid).update(u);
   const i=allProds.findIndex(x=>x.id===pid);if(i>-1)Object.assign(allProds[i],u);
   closeModal();renderProducts();showToast('Product updated!');
@@ -984,6 +1083,10 @@ async function delProd(pid){
   if(!confirm('Delete this product?'))return;
   await db.ref('products/'+pid).remove();
   allProds=allProds.filter(x=>x.id!==pid);renderProducts();showToast('Product deleted');
+}
+function viewProdImg(pid){
+  const p=allProds.find(x=>x.id===pid);if(!p||!p.image){showToast('No image for this product');return;}
+  openModal(p.name,`<img src="${p.image}" style="width:100%;border-radius:8px;max-height:70vh;object-fit:contain;display:block;margin:0 auto" onerror="this.src='https://via.placeholder.com/400x300/e3f2fd/1565c0?text=No+Image'"><div style="text-align:center;margin-top:10px;font-size:12px;color:var(--m)">Category: ${p.category} | Price: Rs.${p.price}</div>`,`<button class="btn btn-sm" style="background:var(--bg);color:var(--t2)" onclick="closeModal()">Close</button><button class="btn btn-p btn-sm" onclick="editProd('${pid}');closeModal()"><i class="fas fa-edit"></i> Edit</button>`);
 }
 
 // -- Categories -----------------------------------------------
@@ -1341,7 +1444,7 @@ function openModal(title,body,foot=''){
   document.getElementById('mFoot').innerHTML=foot;
   document.getElementById('modalWrap').classList.remove('hidden');
 }
-function closeModal(){document.getElementById('modalWrap').classList.add('hidden');}
+function closeModal(){const mw=document.getElementById('modalWrap');mw.classList.add('hidden');setTimeout(()=>{mw.innerHTML='';},300);if(typeof _imgBase64!=='undefined')_imgBase64=null;if(typeof _eImgBase64!=='undefined')_eImgBase64=null;}
 
 function showToast(msg,dur=2600){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
