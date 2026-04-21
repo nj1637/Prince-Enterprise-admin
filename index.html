@@ -595,24 +595,35 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}button{cur
 
 <script>
 // -- Firebase ------------------------------------------------
-if(typeof firebase === 'undefined'){
-  document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5';
-  document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0">Prince Enterprise Admin</h2><p style="color:#666">Firebase failed to load. Please check internet connection.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">Retry</button>';
-  throw new Error('Firebase not loaded');
-}
 let auth, db;
-(function(){
-  try{
-    const cfg={apiKey:"AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",authDomain:"honest-talk-5b839.firebaseapp.com",databaseURL:"https://honest-talk-5b839-default-rtdb.firebaseio.com",projectId:"honest-talk-5b839",storageBucket:"honest-talk-5b839.firebasestorage.app",messagingSenderId:"479110931464",appId:"1:479110931464:web:37bc3a606b8160bae9ddbd"};
-    if(!firebase.apps.length) firebase.initializeApp(cfg);
-    auth=firebase.auth(); db=firebase.database();
-    console.log('✓ Admin Firebase ready');
-  }catch(e){
-    console.error('Admin Firebase error:',e);
-    document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5;padding:20px;text-align:center';
-    document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0;font-family:Exo 2,sans-serif">Prince Enterprise Admin</h2><p style="color:#666;max-width:300px">Could not connect to Firebase.<br>Please check your internet and try again.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-top:8px">Retry</button>';
+let _adminFbReady = false;
+let _adminFbAttempts = 0;
+
+function _adminInitFirebase(){
+  _adminFbAttempts++;
+  if(typeof firebase !== 'undefined' && firebase.app){
+    try{
+      const cfg={apiKey:"AIzaSyAe6eT4TVO1k16ky01dOBalOQUcVOYzrw0",authDomain:"honest-talk-5b839.firebaseapp.com",databaseURL:"https://honest-talk-5b839-default-rtdb.firebaseio.com",projectId:"honest-talk-5b839",storageBucket:"honest-talk-5b839.firebasestorage.app",messagingSenderId:"479110931464",appId:"1:479110931464:web:37bc3a606b8160bae9ddbd"};
+      if(!firebase.apps.length) firebase.initializeApp(cfg);
+      auth=firebase.auth(); db=firebase.database();
+      _adminFbReady=true;
+      console.log('Admin Firebase ready');
+      _initAdminAuth();
+    }catch(e){
+      console.error('Admin Firebase init error:',e);
+      _showAdminFbError();
+    }
+  } else if(_adminFbAttempts < 25){
+    setTimeout(_adminInitFirebase, 300);
+  } else {
+    _showAdminFbError();
   }
-})();
+}
+function _showAdminFbError(){
+  document.body.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#f0f2f5;padding:20px;text-align:center';
+  document.body.innerHTML='<div style="font-size:40px">💡</div><h2 style="color:#2874f0;font-family:Exo 2,sans-serif">Prince Enterprise Admin</h2><p style="color:#666;max-width:300px">Could not connect to Firebase.<br>Please check your internet and try again.</p><button onclick="location.reload()" style="padding:12px 24px;background:#2874f0;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-top:8px">Retry</button>';
+}
+_adminInitFirebase();
 
 // -- State ---------------------------------------------------
 let adminUser=null, allOrders=[], allProds=[], allCusts=[], allCoupons=[], appCfg={}, isDark=false;
@@ -693,11 +704,7 @@ function _initAdminAuth(){
     }
   });
 }
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded', _initAdminAuth);
-} else {
-  _initAdminAuth();
-}
+// _initAdminAuth called from _adminInitFirebase after Firebase is confirmed ready
 
 async function adminLogout(){await auth.signOut();location.reload();}
 
